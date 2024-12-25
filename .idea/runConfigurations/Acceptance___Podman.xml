@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Acceptance | Podman" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="oslc" />
+    <working_directory value="$PROJECT_DIR$/tests/acceptance" />
+    <go_parameters value="--tags &quot;acceptance&quot;" />
+    <envs>
+      <env name="DOCKER_HOST" value="unix:///run/podman/podman.sock" />
+      <env name="TESTCONTAINERS_RYUK_CONTAINER_PRIVILEGED" value="true" />
+      <env name="IMAGE_TO_TEST" value="anImageName" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="oslc/tests/acceptance" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>

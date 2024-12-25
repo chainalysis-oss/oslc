@@ -1,0 +1,24 @@
+with-expecter: true
+dir: "mocks/{{ trimPrefix .PackagePath \"github.com/chainalysis-oss/\" }}"
+packages:
+  github.com/chainalysis-oss/oslc:
+    config:
+    interfaces:
+      DistributorClient:
+        config:
+      Datastore:
+        config:
+      LicenseRetriever:
+        config:
+      LicenseIDNormalizer:
+        config:
+  github.com/chainalysis-oss/oslc/metrics:
+    config:
+    interfaces:
+      httpServer:
+        config:
+  github.com/chainalysis-oss/oslc/grpc:
+    config:
+    interfaces:
+      grpcServer:
+        config:

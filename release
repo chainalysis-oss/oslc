@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+#MISE description="Create a release"
+semantic-release --hooks goreleaser --allow-initial-development-versions --allow-no-changes

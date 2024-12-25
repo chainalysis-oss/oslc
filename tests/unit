@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#MISE description="Run unit tests"
+#MISE sources=["**/*.go", "**/testdata/*", "go.mod", "go.sum"]
+#MISE outputs=["unit_cover.out"]
+go test ./... -coverprofile=./unit_cover.out -covermode=atomic -coverpkg=./...

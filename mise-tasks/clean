@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+#MISE description="Clean up the project"
+rm -rf dist *.out mocks sll/licenses.json gen

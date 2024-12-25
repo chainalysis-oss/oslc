@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+#MISE description="Install git hooks"
+
+mise generate git-pre-commit --hook pre-commit --task pre-commit --write
