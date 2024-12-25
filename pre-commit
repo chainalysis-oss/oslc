@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-#MISE description="Run pre-commit tasks"
-#MISE depends=["tests:check-coverage"]
-
-printf "commit includes the following files: "
-printf "%s\n" "$@"

@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-#MISE description="Generate SBOM for project"
-mkdir -p dist
-cyclonedx-gomod mod -licenses -json -type library -test -std -output dist/historitor.cdx.json .

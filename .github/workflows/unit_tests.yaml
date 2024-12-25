@@ -7,15 +7,15 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # 2.1.10
       - name: Unit Tests
         uses: robherley/go-test-action@v0
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # 2.1.10
       - name: generate test coverage
         run: go test ./... -coverprofile=./cover_unit.out -covermode=atomic
       - name: check test coverage

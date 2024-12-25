@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-#MISE description="Run golang pkgsite and open browser"
-pkgsite -open .
