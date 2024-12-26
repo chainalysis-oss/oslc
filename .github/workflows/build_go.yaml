@@ -18,12 +18,12 @@ jobs:
       - name: Install dependencies
         run: go get .
       - name: Build
-        run: go build cmd/oslc_request_server -o oslc_request_server-${{ matrix.go-arch }}
+        run: go build -o oslc-request-server-${{ matrix.go-arch }} ./cmd/oslc-request-server
       - name: Upload binaries
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # 4.5.0
         with:
-          name: oslc_request_server-${{ matrix.go-arch }}
-          path: oslc_request_server-${{ matrix.go-arch }}
+          name: oslc-request-server-${{ matrix.go-arch }}
+          path: oslc-request-server-${{ matrix.go-arch }}
           retention-days: 1
 
   collect:
@@ -34,19 +34,19 @@ jobs:
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # 4.1.8
         with:
           path: build
-          pattern: oslc_request_server-*
+          pattern: oslc-request-server-*
           merge-multiple: 'true'
       - name: Generate checksums
         run: |
           cd build
-          sha256sum oslc_request_server-* > checksums.txt
+          sha256sum oslc-request-server-* > checksums.txt
       - name: Prepare dist
         run: |
           mkdir dist
           mv build/checksums.txt dist/
-          mv build/oslc_request_server-* dist/
+          mv build/oslc-request-server-* dist/
       - name: Upload binaries and checksums
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # 4.5.0
         with:
-          name: oslc_request_server
+          name: oslc-request-server
           path: dist
