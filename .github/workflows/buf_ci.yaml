@@ -16,3 +16,6 @@ jobs:
         with:
           token: ${{ secrets.BUF_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          format: 'true'
+          lint: 'true'
+          breaking: 'true'
