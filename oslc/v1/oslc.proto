@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package oslc.v1;
+
+option go_package = "oslc/gen/oslc/v1;oslcv1";
+
+message GetPackageInfoRequest {
+  string name = 1;
+  string version = 2;
+  string distributor = 3;
+}
+
+message GetPackageInfoResponse {
+  string name = 1;
+  string version = 2;
+  string license = 3;
+  repeated DistributionPoint distribution_points = 4;
+}
+
+message DistributionPoint {
+  string name = 1;
+  string url = 2;
+  string distributor = 3;
+}
+
+service OslcService {
+  rpc GetPackageInfo(GetPackageInfoRequest) returns (GetPackageInfoResponse) {}
+}

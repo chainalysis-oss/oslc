@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#MISE description="Check test coverage"
+#MISE depends=["tests:unit"]
+#MISE wait_for=["tests:unit"]
+go-test-coverage --config=./.testcoverage.yml

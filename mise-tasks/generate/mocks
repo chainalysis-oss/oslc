@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#MISE description="Generate mocks for the project"
+#MISE sources=["**/*.go", "go.mod", "go.sum"]
+#MISE outputs=["mocks"]
+mockery

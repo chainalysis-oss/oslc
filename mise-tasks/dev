@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+#MISE description="Run development version of oslc"
+#MISE sources=["**/*.go", "go.mod", "go.sum"]
+docker-compose up -d
+echo "If this is the first time you're firing up the app, you might have to run migration scripts manually from the postgres/migrations folder."
+go run cmd/request-server/main.go

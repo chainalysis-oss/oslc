@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+#MISE description="Download SPDX license list data"
+#MISE outputs=["sll/licenses.json"]
+wget https://raw.githubusercontent.com/spdx/license-list-data/refs/tags/v3.25.0/json/licenses.json --output-document sll/licenses.json

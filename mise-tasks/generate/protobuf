@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#MISE description="Generate protobuf related files for the project"
+#MISE sources=["**/*.proto"]
+#MISE outputs=["**/*.pb.go"]
+buf generate
