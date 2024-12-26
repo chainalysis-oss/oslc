@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: oslc/v1/oslc.proto
+// source: oslc/oslc/v1alpha/oslc.proto
 
-package oslcv1
+package oslcv1alpha
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	OslcService_GetPackageInfo_FullMethodName = "/oslc.v1.OslcService/GetPackageInfo"
+	OslcService_GetPackageInfo_FullMethodName = "/oslc.oslc.v1alpha.OslcService/GetPackageInfo"
 )
 
 // OslcServiceClient is the client API for OslcService service.
@@ -108,7 +108,7 @@ func _OslcService_GetPackageInfo_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var OslcService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "oslc.v1.OslcService",
+	ServiceName: "oslc.oslc.v1alpha.OslcService",
 	HandlerType: (*OslcServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -117,5 +117,5 @@ var OslcService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "oslc/v1/oslc.proto",
+	Metadata: "oslc/oslc/v1alpha/oslc.proto",
 }

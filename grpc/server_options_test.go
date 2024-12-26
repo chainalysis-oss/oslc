@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	oslcv1 "github.com/chainalysis-oss/oslc/gen/oslc/v1"
+	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -74,12 +74,12 @@ func TestWithPrometheusRegistry(t *testing.T) {
 }
 
 func TestWithOslcServiceServer(t *testing.T) {
-	thing := oslcv1.UnimplementedOslcServiceServer{}
+	thing := oslcv1alpha.UnimplementedOslcServiceServer{}
 	require.NotNil(t, thing)
 	opts := serverOptions{}
 	f := WithOslcServiceServer(thing)
 	f.apply(&opts)
-	require.Equal(t, thing, opts.Oslcv1)
+	require.Equal(t, thing, opts.oslcv1alpha)
 }
 
 func TestWithTLS(t *testing.T) {

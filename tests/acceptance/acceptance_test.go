@@ -12,7 +12,7 @@ package acceptance
 
 import (
 	"fmt"
-	oslcv1 "github.com/chainalysis-oss/oslc/gen/oslc/v1"
+	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -92,15 +92,15 @@ func TestContainerStarts(t *testing.T) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	require.NoError(t, err)
-	client := oslcv1.NewOslcServiceClient(conn)
+	client := oslcv1alpha.NewOslcServiceClient(conn)
 
-	resp, err := client.GetPackageInfo(ctx, &oslcv1.GetPackageInfoRequest{Name: "requests", Version: "2.32.0", Distributor: "pypi"})
+	resp, err := client.GetPackageInfo(ctx, &oslcv1alpha.GetPackageInfoRequest{Name: "requests", Version: "2.32.0", Distributor: "pypi"})
 	require.NoError(t, err)
-	require.EqualExportedValues(t, &oslcv1.GetPackageInfoResponse{
+	require.EqualExportedValues(t, &oslcv1alpha.GetPackageInfoResponse{
 		Name:    "requests",
 		Version: "2.32.0",
 		License: "Apache-2.0",
-		DistributionPoints: []*oslcv1.DistributionPoint{
+		DistributionPoints: []*oslcv1alpha.DistributionPoint{
 			{
 				Name:        "requests",
 				Url:         "https://pypi.org/project/requests/",
