@@ -3,7 +3,7 @@ package oslc
 import (
 	"context"
 	"github.com/chainalysis-oss/oslc"
-	oslcv1 "github.com/chainalysis-oss/oslc/gen/oslc/v1"
+	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	oslcMocks "github.com/chainalysis-oss/oslc/mocks/oslc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -69,17 +69,17 @@ var pypiRequestsEntry = oslc.Entry{
 	}},
 }
 
-var pypiRequestsGetPackageInfoRequest = oslcv1.GetPackageInfoRequest{
+var pypiRequestsGetPackageInfoRequest = oslcv1alpha.GetPackageInfoRequest{
 	Name:        "requests",
 	Version:     "2.32.3",
 	Distributor: oslc.DistributorPypi,
 }
 
-var pypiRequestsGetPackageInfoResponse = oslcv1.GetPackageInfoResponse{
+var pypiRequestsGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
 	Name:    "requests",
 	Version: "2.32.3",
 	License: "Apache-2.0",
-	DistributionPoints: []*oslcv1.DistributionPoint{{
+	DistributionPoints: []*oslcv1alpha.DistributionPoint{{
 		Name:        "requests",
 		Url:         "https://pypi.org/project/requests/",
 		Distributor: oslc.DistributorPypi,
@@ -96,17 +96,17 @@ var npmTestEntry = oslc.Entry{
 	}},
 }
 
-var npmTestGetPackageInfoRequest = oslcv1.GetPackageInfoRequest{
+var npmTestGetPackageInfoRequest = oslcv1alpha.GetPackageInfoRequest{
 	Name:        "test",
 	Version:     "3.3.0",
 	Distributor: oslc.DistributorNpm,
 }
 
-var npmTestGetPackageInfoResponse = oslcv1.GetPackageInfoResponse{
+var npmTestGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
 	Name:    "test",
 	Version: "3.3.0",
 	License: "MIT",
-	DistributionPoints: []*oslcv1.DistributionPoint{{
+	DistributionPoints: []*oslcv1alpha.DistributionPoint{{
 		Name:        "test",
 		Url:         "https://www.npmjs.com/package/test",
 		Distributor: oslc.DistributorNpm,
@@ -124,17 +124,17 @@ var mavenLog4jEntry = oslc.Entry{
 	}},
 }
 
-var mavenLog4jGetPackageInfoRequest = oslcv1.GetPackageInfoRequest{
+var mavenLog4jGetPackageInfoRequest = oslcv1alpha.GetPackageInfoRequest{
 	Name:        "org.apache.logging.log4j:log4j",
 	Version:     "3.0.0-beta2",
 	Distributor: oslc.DistributorMaven,
 }
 
-var mavenLog4jGetPackageInfoResponse = oslcv1.GetPackageInfoResponse{
+var mavenLog4jGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
 	Name:    "org.apache.logging.log4j:log4j",
 	Version: "3.0.0-beta2",
 	License: "Apache-2.0",
-	DistributionPoints: []*oslcv1.DistributionPoint{{
+	DistributionPoints: []*oslcv1alpha.DistributionPoint{{
 		Name:        "org.apache.logging.log4j:log4j",
 		Url:         "https://central.sonatype.com/artifact/org.apache.logging.log4j/log4j",
 		Distributor: oslc.DistributorMaven,
@@ -147,13 +147,13 @@ func TestServer_GetPackageInfo(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		c   *oslcv1.GetPackageInfoRequest
+		c   *oslcv1alpha.GetPackageInfoRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *oslcv1.GetPackageInfoResponse
+		want    *oslcv1alpha.GetPackageInfoResponse
 		wantErr bool
 	}{
 		{
@@ -412,7 +412,7 @@ func TestServer_GetPackageInfo(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				c: &oslcv1.GetPackageInfoRequest{
+				c: &oslcv1alpha.GetPackageInfoRequest{
 					Distributor: "invalid",
 				},
 			},

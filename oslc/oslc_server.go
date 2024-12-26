@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/chainalysis-oss/oslc"
-	oslcv1 "github.com/chainalysis-oss/oslc/gen/oslc/v1"
+	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log/slog"
@@ -12,7 +12,7 @@ import (
 
 type Server struct {
 	options *serverOptions
-	oslcv1.UnimplementedOslcServiceServer
+	oslcv1alpha.UnimplementedOslcServiceServer
 }
 
 type InvalidDistributorError struct {
@@ -51,7 +51,7 @@ func (s Server) normalizeEntry(ctx context.Context, entry oslc.Entry) oslc.Entry
 	return entry
 }
 
-func (s Server) GetPackageInfo(ctx context.Context, request *oslcv1.GetPackageInfoRequest) (*oslcv1.GetPackageInfoResponse, error) {
+func (s Server) GetPackageInfo(ctx context.Context, request *oslcv1alpha.GetPackageInfoRequest) (*oslcv1alpha.GetPackageInfoResponse, error) {
 	if !validDistributor(request.Distributor) {
 		return nil, status.Error(codes.InvalidArgument, "invalid distributor")
 	}
@@ -77,15 +77,15 @@ func (s Server) GetPackageInfo(ctx context.Context, request *oslcv1.GetPackageIn
 			s.options.Logger.Error("failed to save to datastore", slog.String("error", err.Error()))
 		}
 	}
-	dps := make([]*oslcv1.DistributionPoint, len(entry.DistributionPoints))
+	dps := make([]*oslcv1alpha.DistributionPoint, len(entry.DistributionPoints))
 	for i, dp := range entry.DistributionPoints {
-		dps[i] = &oslcv1.DistributionPoint{
+		dps[i] = &oslcv1alpha.DistributionPoint{
 			Name:        dp.Name,
 			Url:         dp.URL,
 			Distributor: dp.Distributor,
 		}
 	}
-	return &oslcv1.GetPackageInfoResponse{
+	return &oslcv1alpha.GetPackageInfoResponse{
 		Name:               entry.Name,
 		Version:            entry.Version,
 		License:            entry.License,

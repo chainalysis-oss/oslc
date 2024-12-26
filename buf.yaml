@@ -6,5 +6,5 @@ breaking:
   use:
     - FILE
 modules:
-  - path: .
+  - path: proto
     name: buf.build/chainalysis-oss/oslc

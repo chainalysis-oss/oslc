@@ -3,7 +3,7 @@ package grpc
 import (
 	"bytes"
 	"context"
-	oslcv1 "github.com/chainalysis-oss/oslc/gen/oslc/v1"
+	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	grpcmock "github.com/chainalysis-oss/oslc/mocks/oslc/grpc"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/prometheus/client_golang/prometheus"
@@ -49,8 +49,8 @@ func TestServer_GracefulStop(t *testing.T) {
 }
 
 func TestServer_RegisterService(t *testing.T) {
-	svc := &oslcv1.UnimplementedOslcServiceServer{}
-	svcDesc := oslcv1.OslcService_ServiceDesc
+	svc := &oslcv1alpha.UnimplementedOslcServiceServer{}
+	svcDesc := oslcv1alpha.OslcService_ServiceDesc
 	mock := grpcmock.NewMockgrpcServer(t)
 	mock.EXPECT().RegisterService(&svcDesc, svc)
 

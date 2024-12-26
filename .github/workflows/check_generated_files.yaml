@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - uses: brokeyourbike/go-mockery-action@ebeda68ca3dc8c3eace9672761c73aae1c4377f3 # 0.1.7
         with:
-          mockery-version: '2.50.0'
+          mockery-version: '2.50.1'
       - run:
           mockery
       - name: Check for changes
