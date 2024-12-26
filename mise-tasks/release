@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-#MISE description="Create a release"
-# Running this requires the following environment variables to be set:
-# - GITHUB_TOKEN: A GitHub token with the necessary permissions
-# - GITHUB_REPOSITORY: The GitHub repository in the format "owner/repo"
-semantic-release --allow-initial-development-versions --allow-no-changes

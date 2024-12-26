@@ -5,3 +5,6 @@ lint:
 breaking:
   use:
     - FILE
+modules:
+  - path: .
+    name: buf.build/chainalysis-oss/oslc

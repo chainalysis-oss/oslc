@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
-      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # 2.1.10
+      - uses: bufbuild/buf-action@3fb70352251376e958c4c2c92c3818de82a71c2b # 1.0.2
         with:
-          experimental: true
+          setup_only: 'true'
       - run:
           buf generate
       - name: Check for changes
@@ -36,9 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
-      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # 2.1.10
+      - uses: brokeyourbike/go-mockery-action@ebeda68ca3dc8c3eace9672761c73aae1c4377f3 # 0.1.7
         with:
-          experimental: true
+          mockery-version: '2.50.0'
       - run:
           mockery
       - name: Check for changes
