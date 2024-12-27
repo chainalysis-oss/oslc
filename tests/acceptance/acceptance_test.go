@@ -1,5 +1,3 @@
-//go:build acceptance
-
 // Note for running on macOS with Podman:
 // When running these tests, the following 2 prefixes are required for testcontainers to work with Podman:
 //  1. DOCKER_HOST environment variable must be set.
@@ -52,6 +50,7 @@ func TestContainerStarts(t *testing.T) {
 				WithOccurrence(2).WithStartupTimeout(5*time.Second),
 		),
 	)
+	require.NoError(t, err)
 	pgContainerHost, err := postgresContainer.ContainerIP(ctx)
 	require.NoError(t, err)
 	req := testcontainers.ContainerRequest{
@@ -70,6 +69,7 @@ func TestContainerStarts(t *testing.T) {
 		ContainerRequest: req,
 		Started:          true,
 	})
+	require.NoError(t, err)
 
 	defer testcontainers.CleanupContainer(t, rs)
 	defer testcontainers.CleanupContainer(t, postgresContainer)
