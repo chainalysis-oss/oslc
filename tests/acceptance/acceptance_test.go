@@ -9,6 +9,8 @@
 package acceptance
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"github.com/stretchr/testify/require"
@@ -16,10 +18,12 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"io"
+	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -38,6 +42,30 @@ func init() {
 	}
 }
 
+func setupGrpcClientForOSLC(t *testing.T, ctx context.Context, c testcontainers.Container) *grpc.ClientConn {
+	t.Helper()
+	host, err := c.Host(ctx)
+	require.NoError(t, err)
+
+	port, err := c.MappedPort(ctx, "8080")
+	require.NoError(t, err)
+
+	addr := net.JoinHostPort(host, port.Port())
+
+	caCert, err := os.ReadFile("../../build/tls/ca/rootCA.pem")
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	conn, err := grpc.NewClient(addr,
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{RootCAs: caCertPool})),
+	)
+	require.NoError(t, err)
+	return conn
+}
+
 func TestContainerStarts(t *testing.T) {
 	ctx := context.Background()
 	postgresContainer, err := postgres.Run(ctx,
@@ -53,6 +81,11 @@ func TestContainerStarts(t *testing.T) {
 	require.NoError(t, err)
 	pgContainerHost, err := postgresContainer.ContainerIP(ctx)
 	require.NoError(t, err)
+
+	certPath, err := filepath.Abs(filepath.Join("..", "..", "build", "tls", "oslc-request-server.internal.crt"))
+	require.NoError(t, err)
+	keyPath, err := filepath.Abs(filepath.Join("..", "..", "build", "tls", "oslc-request-server.internal.key"))
+
 	req := testcontainers.ContainerRequest{
 		Image:        ImageToTest,
 		ExposedPorts: []string{"8080/tcp"},
@@ -63,6 +96,20 @@ func TestContainerStarts(t *testing.T) {
 			"DATASTORE_DB":       "test",
 			"DATASTORE_USER":     "user",
 			"DATASTORE_PASSWORD": "password",
+			"OSLC_TLS_CERT_FILE": "/oslc_tls_cert_file",
+			"OSLC_TLS_KEY_FILE":  "/oslc_tls_key_file",
+		},
+		Files: []testcontainers.ContainerFile{
+			{
+				HostFilePath:      certPath,
+				ContainerFilePath: "/oslc_tls_cert_file",
+				FileMode:          0o777,
+			},
+			{
+				HostFilePath:      keyPath,
+				ContainerFilePath: "/oslc_tls_key_file",
+				FileMode:          0o777,
+			},
 		},
 	}
 	rs, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -82,17 +129,7 @@ func TestContainerStarts(t *testing.T) {
 
 	require.True(t, rs.IsRunning(), "container is not running")
 
-	host, err := rs.Host(ctx)
-	require.NoError(t, err)
-
-	port, err := rs.MappedPort(ctx, "8080")
-	require.NoError(t, err)
-
-	conn, err := grpc.NewClient(net.JoinHostPort(host, port.Port()),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	require.NoError(t, err)
-	client := oslcv1alpha.NewOslcServiceClient(conn)
+	client := oslcv1alpha.NewOslcServiceClient(setupGrpcClientForOSLC(t, ctx, rs))
 
 	resp, err := client.GetPackageInfo(ctx, &oslcv1alpha.GetPackageInfoRequest{Name: "requests", Version: "2.32.0", Distributor: "pypi"})
 	require.NoError(t, err)

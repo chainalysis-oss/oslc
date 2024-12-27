@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 #MISE description="Generate certificates used for development"
 #MISE outputs=["build/tls/oslc-request-server.internal.crt", "build/tls/oslc-request-server.internal.key"]
-CAROOT=build/tls/ca mkcert -client -ecdsa -cert-file build/tls/oslc-request-server.internal.crt -key-file build/tls/oslc-request-server.internal.key oslc-request-server.internal
+CAROOT=build/tls/ca mkcert -client -ecdsa -cert-file build/tls/oslc-request-server.internal.crt -key-file build/tls/oslc-request-server.internal.key oslc-request-server.internal localhost
