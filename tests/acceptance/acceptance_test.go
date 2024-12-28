@@ -1,3 +1,5 @@
+//go:build acceptance
+
 // Note for running on macOS with Podman:
 // When running these tests, the following 2 prefixes are required for testcontainers to work with Podman:
 //  1. DOCKER_HOST environment variable must be set.
