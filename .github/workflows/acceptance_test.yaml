@@ -4,12 +4,14 @@ on:
     inputs:
       image:
         description: 'The image to test'
+        type: string
         required: true
         default: 'ghcr.io/chainalysis-oss/oslc:dev'
   workflow_call:
     inputs:
       image:
         description: 'The image to test'
+        type: string
         required: true
         default: 'ghcr.io/chainalysis-oss/oslc:dev'
   push:
