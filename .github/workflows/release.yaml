@@ -36,7 +36,6 @@ jobs:
     needs: release-gate
     if: needs.release-gate.outputs.version != ''
   test:
-    runs-on: ubuntu-latest
     needs: build
     uses: chainalysis-oss/oslc/.github/workflows/acceptance_test.yaml@main
     with:
