@@ -24,4 +24,4 @@ jobs:
         with:
           experimental: true
       - run: mise run generate:certificates
-      - run: IMAGE_TO_TEST="${{ github.event.inputs.image }}" go test tests/acceptance/*.go
+      - run: IMAGE_TO_TEST="${{ inputs.image }}" go test tests/acceptance/*.go

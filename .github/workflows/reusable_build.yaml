@@ -1,0 +1,129 @@
+name: Reusable Build
+
+on:
+  workflow_call:
+    outputs:
+      oci-digest:
+        description: The digest for the multi-arch OCI image build and pushed to the registry
+        value: ${{ jobs.oci.outputs.digest }}
+      fully-qualified-image-name:
+        description: The fully qualified image name for the multi-arch OCI image build and pushed to the registry
+        value: ghcr.io/${{ github.repository }}
+    inputs:
+      version:
+        description: The version to build and push. Must be a valid semantic version.
+        type: string
+        required: true
+        default: ''
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-arch: [amd64, arm64]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - name: Setup Go
+        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # 5.2.0
+        with:
+          go-version-file: "./go.mod"
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: GOOS=linux GOARCH=${{ matrix.go-arch }} go build -o oslc-request-server-linux-${{ matrix.go-arch }} ./cmd/oslc-request-server
+      - name: Upload binaries
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # 4.5.0
+        with:
+          name: oslc-request-server-linux-${{ matrix.go-arch }}
+          path: oslc-request-server-linux-${{ matrix.go-arch }}
+          retention-days: 1
+  checksums:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # 4.1.8
+        with:
+          path: build
+          pattern: oslc-request-server-*
+          merge-multiple: 'true'
+      - name: Generate checksums
+        run: |
+          cd build
+          sha256sum oslc-request-server-* > checksums.txt
+      - name: Prepare dist
+        run: |
+          mkdir dist
+          mv build/checksums.txt dist/
+          mv build/oslc-request-server-* dist/
+      - name: Upload binaries and checksums
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # 4.5.0
+        with:
+          name: oslc-request-server
+          path: dist
+  oci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    needs:
+      - checksums
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - name: Download binaries
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # 4.1.8
+        with:
+          name: oslc-request-server
+          path: dist
+      - run: |
+          cd dist
+          sha256sum -c checksums.txt
+      - name: Login to registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # 3.8.0
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # 5.6.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.description=OSLC Request Server
+            org.opencontainers.image.version=${{ inputs.version }}
+          annotations: |
+            org.opencontainers.image.description=OSLC Request Server
+            org.opencontainers.image.version=${{ inputs.version }}
+          tags: |
+            type=raw,value=build-${{github.run_id}}-${{github.run_attempt}}
+      - name: Build and push
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # 6.10.0
+        id: push
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          platforms: linux/amd64,linux/arm64
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # 2.1.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
