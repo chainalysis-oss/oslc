@@ -15,7 +15,6 @@ var DefaultClient *Client
 func init() {
 	DefaultClient, _ = NewClient(
 		WithLogger(slog.Default()),
-		WithUserAgent("oslc-go"),
 		WithHTTPClient(&http.Client{
 			Timeout: 10 * time.Second,
 		}),

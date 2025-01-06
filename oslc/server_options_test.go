@@ -114,3 +114,11 @@ func TestWithLicenseIDNormalizer(t *testing.T) {
 	f.apply(&opts)
 	require.Equal(t, mock, opts.LicenseIDNormalizer)
 }
+
+func TestWithCratesIoClient(t *testing.T) {
+	client := oslcmocks.NewMockDistributorClient(t)
+	opts := serverOptions{}
+	f := WithCratesIoClient(client)
+	f.apply(&opts)
+	require.Equal(t, client, opts.CratesIoClient)
+}

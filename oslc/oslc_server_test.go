@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"io"
 	"log/slog"
-	"reflect"
 	"testing"
 )
 
@@ -40,6 +39,13 @@ func Test_validDistributor(t *testing.T) {
 			name: "maven",
 			args: args{
 				distributor: oslc.DistributorMaven,
+			},
+			want: true,
+		},
+		{
+			name: "cratesio",
+			args: args{
+				distributor: oslc.DistributorCratesIo,
 			},
 			want: true,
 		},
@@ -138,6 +144,34 @@ var mavenLog4jGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
 		Name:        "org.apache.logging.log4j:log4j",
 		Url:         "https://central.sonatype.com/artifact/org.apache.logging.log4j/log4j",
 		Distributor: oslc.DistributorMaven,
+	}},
+}
+
+var cratesIoSnarkVMEntry = oslc.Entry{
+	Name:    "snarkvm-marlin",
+	Version: "0.8.0",
+	License: "GPL-3.0",
+	DistributionPoints: []oslc.DistributionPoint{{
+		Name:        "snarkvm-marlin",
+		URL:         "https://crates.io/crates/snarkvm-marlin",
+		Distributor: oslc.DistributorCratesIo,
+	}},
+}
+
+var cratesIoSnarkVMGetPackageInfoRequest = oslcv1alpha.GetPackageInfoRequest{
+	Name:        "snarkvm-marlin",
+	Version:     "0.8.0",
+	Distributor: oslc.DistributorCratesIo,
+}
+
+var cratesIoSnarkVMGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
+	Name:    "snarkvm-marlin",
+	Version: "0.8.0",
+	License: "GPL-3.0",
+	DistributionPoints: []*oslcv1alpha.DistributionPoint{{
+		Name:        "snarkvm-marlin",
+		Url:         "https://crates.io/crates/snarkvm-marlin",
+		Distributor: oslc.DistributorCratesIo,
 	}},
 }
 
@@ -406,6 +440,40 @@ func TestServer_GetPackageInfo(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "distributor_cratesio_called",
+			fields: fields{
+				options: &serverOptions{
+					Datastore: func() oslc.Datastore {
+						mockDatastore := oslcMocks.NewMockDatastore(t)
+						mockDatastore.EXPECT().Retrieve(context.Background(), cratesIoSnarkVMGetPackageInfoRequest.Name, cratesIoSnarkVMGetPackageInfoRequest.Version, oslc.DistributorCratesIo).
+							Return(oslc.Entry{}, oslc.ErrDatastoreObjectNotFound)
+						mockDatastore.EXPECT().Save(context.Background(), cratesIoSnarkVMEntry).
+							Return(nil)
+						return mockDatastore
+					}(),
+					CratesIoClient: func() oslc.DistributorClient {
+						mockClient := oslcMocks.NewMockDistributorClient(t)
+						mockClient.EXPECT().GetPackageVersion(cratesIoSnarkVMGetPackageInfoRequest.Name, cratesIoSnarkVMGetPackageInfoRequest.Version).
+							Return(cratesIoSnarkVMEntry, nil)
+						return mockClient
+					}(),
+					Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+					LicenseIDNormalizer: func() oslc.LicenseIDNormalizer {
+						mockNormalizer := oslcMocks.NewMockLicenseIDNormalizer(t)
+						mockNormalizer.EXPECT().NormalizeID(context.Background(), cratesIoSnarkVMEntry.License).
+							Return(cratesIoSnarkVMEntry.License)
+						return mockNormalizer
+					}(),
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				c:   &cratesIoSnarkVMGetPackageInfoRequest,
+			},
+			want:    &cratesIoSnarkVMGetPackageInfoResponse,
+			wantErr: false,
+		},
+		{
 			name: "invalid_distributor",
 			fields: fields{
 				options: &serverOptions{},
@@ -430,9 +498,7 @@ func TestServer_GetPackageInfo(t *testing.T) {
 				t.Errorf("GetPackageInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetPackageInfo() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.want, got)
 		})
 	}
 }

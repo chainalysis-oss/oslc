@@ -3,6 +3,7 @@ package oslc
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 type Entry struct {
@@ -19,9 +20,10 @@ type DistributionPoint struct {
 }
 
 const (
-	DistributorPypi  = "pypi"
-	DistributorNpm   = "npm"
-	DistributorMaven = "maven"
+	DistributorPypi     = "pypi"
+	DistributorNpm      = "npm"
+	DistributorMaven    = "maven"
+	DistributorCratesIo = "crates.io"
 )
 
 type DatastoreSaver interface {
@@ -43,6 +45,8 @@ type DistributorClient interface {
 }
 
 var ErrDatastoreObjectNotFound = errors.New("not found")
+
+var ErrVersionNotFound = fmt.Errorf("version not found")
 
 type License struct {
 	Name string

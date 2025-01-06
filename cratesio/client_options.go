@@ -1,4 +1,4 @@
-package npm
+package cratesio
 
 import (
 	"github.com/chainalysis-oss/oslc/http"
@@ -13,7 +13,7 @@ type clientOptions struct {
 }
 
 var defaultClientOptions = clientOptions{
-	BaseURL: "https://registry.npmjs.org",
+	BaseURL: "https://crates.io",
 	Logger:  slog.Default(),
 }
 

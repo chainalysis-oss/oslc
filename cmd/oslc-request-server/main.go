@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/chainalysis-oss/oslc/cratesio"
 	"github.com/chainalysis-oss/oslc/grpc"
 	"github.com/chainalysis-oss/oslc/maven"
 	"github.com/chainalysis-oss/oslc/metrics"
@@ -40,6 +41,7 @@ func main() {
 	pypiClient, _ := pypi.NewClient(pypi.WithLogger(logger))
 	npmClient, _ := npm.NewClient(npm.WithLogger(logger))
 	mavenClient, _ := maven.NewClient(maven.WithLogger(logger))
+	cratesioClient, err := cratesio.NewClient(cratesio.WithLogger(logger))
 
 	dbPool, err := postgres.NewPool(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%d/%s", url.QueryEscape(config.Datastore.Username), url.QueryEscape(config.Datastore.Password), config.Datastore.Host, config.Datastore.Port, config.Datastore.Database))
 	if err != nil {
@@ -69,6 +71,7 @@ func main() {
 		oslc.WithPypiClient(pypiClient),
 		oslc.WithNpmClient(npmClient),
 		oslc.WithMavenClient(mavenClient),
+		oslc.WithCratesIoClient(cratesioClient),
 		oslc.WithDatastore(datastore),
 		oslc.WithLicenseIDNormalizer(normalizer),
 	)
