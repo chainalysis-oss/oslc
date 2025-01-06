@@ -33,6 +33,8 @@ func (s Server) getPackageFromDistributor(ctx context.Context, distributor strin
 		entry, err = s.options.NpmClient.GetPackageVersion(name, version)
 	case oslc.DistributorMaven:
 		entry, err = s.options.MavenClient.GetPackageVersion(name, version)
+	case oslc.DistributorCratesIo:
+		entry, err = s.options.CratesIoClient.GetPackageVersion(name, version)
 	default:
 		return oslc.Entry{}, InvalidDistributorError{Distributor: distributor}
 	}
@@ -108,5 +110,5 @@ func NewServer(options ...ServerOption) (*Server, error) {
 }
 
 func validDistributor(distributor string) bool {
-	return distributor == oslc.DistributorPypi || distributor == oslc.DistributorNpm || distributor == oslc.DistributorMaven
+	return distributor == oslc.DistributorPypi || distributor == oslc.DistributorNpm || distributor == oslc.DistributorMaven || distributor == oslc.DistributorCratesIo
 }

@@ -13,9 +13,8 @@ type clientOptions struct {
 }
 
 var defaultClientOptions = clientOptions{
-	BaseURL:   "https://search.maven.org",
-	UserAgent: "oslc-go",
-	Logger:    slog.Default(),
+	BaseURL: "https://search.maven.org",
+	Logger:  slog.Default(),
 }
 
 var globalClientOptions []ClientOption

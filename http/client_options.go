@@ -20,7 +20,7 @@ var defaultClientOptions = clientOptions{
 	HttpClient: &http.Client{
 		Timeout: 10 * time.Second,
 	},
-	UserAgent:   "oslc-go",
+	UserAgent:   "Open Software License Catalogue (github.com/chainalysis-oss/oslc)",
 	ReaderLimit: 20 * 1024 * 1024,
 }
 

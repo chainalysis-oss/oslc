@@ -10,6 +10,7 @@ type serverOptions struct {
 	PypiClient          oslc.DistributorClient
 	NpmClient           oslc.DistributorClient
 	MavenClient         oslc.DistributorClient
+	CratesIoClient      oslc.DistributorClient
 	Datastore           oslc.Datastore
 	LicenseIDNormalizer oslc.LicenseIDNormalizer
 }
@@ -80,5 +81,12 @@ func WithDatastore(d oslc.Datastore) ServerOption {
 func WithLicenseIDNormalizer(l oslc.LicenseIDNormalizer) ServerOption {
 	return newFuncClientOption(func(opts *serverOptions) {
 		opts.LicenseIDNormalizer = l
+	})
+}
+
+// WithCratesIoClient returns a ServerOption that uses the provided Crates.io client.
+func WithCratesIoClient(c oslc.DistributorClient) ServerOption {
+	return newFuncClientOption(func(opts *serverOptions) {
+		opts.CratesIoClient = c
 	})
 }

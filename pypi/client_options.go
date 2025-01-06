@@ -13,9 +13,8 @@ type clientOptions struct {
 }
 
 var defaultClientOptions = clientOptions{
-	BaseURL:   "https://pypi.org",
-	UserAgent: "oslc-go",
-	Logger:    slog.Default(),
+	BaseURL: "https://pypi.org",
+	Logger:  slog.Default(),
 }
 
 var globalClientOptions []ClientOption
