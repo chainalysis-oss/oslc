@@ -113,6 +113,7 @@ func TestContainerStarts(t *testing.T) {
 				FileMode:          0o777,
 			},
 		},
+		WaitingFor: wait.ForLog("starting grpc server").WithStartupTimeout(5 * time.Second),
 	}
 	rs, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
@@ -144,6 +145,21 @@ func TestContainerStarts(t *testing.T) {
 				Name:        "requests",
 				Url:         "https://pypi.org/project/requests/",
 				Distributor: "pypi",
+			},
+		},
+	}, resp)
+
+	resp, err = client.GetPackageInfo(ctx, &oslcv1alpha.GetPackageInfoRequest{Name: "github.com/keltia/leftpad", Version: "v0.1.0", Distributor: "go"})
+	require.NoError(t, err)
+	require.EqualExportedValues(t, &oslcv1alpha.GetPackageInfoResponse{
+		Name:    "github.com/keltia/leftpad",
+		Version: "v0.1.0",
+		License: "BSD-2-Clause",
+		DistributionPoints: []*oslcv1alpha.DistributionPoint{
+			{
+				Name:        "github.com/keltia/leftpad",
+				Url:         "https://proxy.golang.org/github.com/keltia/leftpad/@v/v0.1.0.zip",
+				Distributor: "go",
 			},
 		},
 	}, resp)
