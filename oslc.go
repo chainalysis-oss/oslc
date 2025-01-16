@@ -24,6 +24,7 @@ const (
 	DistributorNpm      = "npm"
 	DistributorMaven    = "maven"
 	DistributorCratesIo = "crates.io"
+	DistributorGo       = "go"
 )
 
 type DatastoreSaver interface {
@@ -78,4 +79,18 @@ type LicenseIDNormalizer interface {
 	//
 	// Implementations should document these implementation-specific details.
 	NormalizeID(ctx context.Context, id string) string
+}
+
+// DistributorError is an error type that represents an error that occurred in communicating with a distributor.
+type DistributorError struct {
+	Distributor string
+	Err         error
+}
+
+func (e DistributorError) Error() string {
+	if e.Err == nil {
+		return fmt.Sprintf("unspecified error communicating with %s", e.Distributor)
+	}
+
+	return fmt.Sprintf("error communicating with %s: %s", e.Distributor, e.Err)
 }

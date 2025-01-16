@@ -19,6 +19,21 @@ func TestNewServer(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, server)
 	require.Equal(t, slog.New(slog.NewTextHandler(io.Discard, nil)), server.options.Logger)
+
+	t.Run("without go client", func(t *testing.T) {
+		server, err := NewServer(WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
+		require.NoError(t, err)
+		require.NotNil(t, server)
+		require.Nil(t, server.options.GoClient)
+	})
+
+	t.Run("with go client", func(t *testing.T) {
+		client := oslcmocks.NewMockDistributorClient(t)
+		server, err := NewServer(WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))), WithGoClient(client))
+		require.NoError(t, err)
+		require.NotNil(t, server)
+		require.Equal(t, client, server.options.GoClient)
+	})
 }
 
 func TestNewServer_globalOptionsAreApplied(t *testing.T) {

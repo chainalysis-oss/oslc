@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 #MISE description="Run development version of oslc"
 #MISE sources=["**/*.go", "go.mod", "go.sum"]
+#MISE env={OSLC_TLS_CERT_FILE = "build/tls/oslc-request-server.internal.crt", OSLC_TLS_KEY_FILE = "build/tls/oslc-request-server.internal.key"}
 docker-compose up -d
 echo "If this is the first time you're firing up the app, you might have to run migration scripts manually from the postgres/migrations folder."
-go run cmd/request-server/main.go
+go run ./cmd/oslc-request-server
