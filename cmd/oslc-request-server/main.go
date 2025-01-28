@@ -104,8 +104,10 @@ func main() {
 		})))
 	}
 
-	if config.TLS.CertFile != "" && config.TLS.KeyFile != "" {
+	if !config.Grpc.NoTLS {
 		optionalGrpcServerOptions = append(optionalGrpcServerOptions, grpc.WithTLS(config.TLS.CertFile, config.TLS.KeyFile))
+	} else {
+		logger.Info("gRPC server will not use TLS")
 	}
 
 	grpcServerOptions := []grpc.ServerOption{
