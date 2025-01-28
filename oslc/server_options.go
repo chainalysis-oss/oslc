@@ -11,6 +11,7 @@ type serverOptions struct {
 	NpmClient           oslc.DistributorClient
 	MavenClient         oslc.DistributorClient
 	CratesIoClient      oslc.DistributorClient
+	GoClient            oslc.DistributorClient
 	Datastore           oslc.Datastore
 	LicenseIDNormalizer oslc.LicenseIDNormalizer
 }
@@ -88,5 +89,12 @@ func WithLicenseIDNormalizer(l oslc.LicenseIDNormalizer) ServerOption {
 func WithCratesIoClient(c oslc.DistributorClient) ServerOption {
 	return newFuncClientOption(func(opts *serverOptions) {
 		opts.CratesIoClient = c
+	})
+}
+
+// WithGoClient returns a ServerOption that uses the provided Go client.
+func WithGoClient(c oslc.DistributorClient) ServerOption {
+	return newFuncClientOption(func(opts *serverOptions) {
+		opts.GoClient = c
 	})
 }

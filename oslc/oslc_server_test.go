@@ -175,6 +175,34 @@ var cratesIoSnarkVMGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
 	}},
 }
 
+var goOslcEntry = oslc.Entry{
+	Name:    "github.com/chainalysis-oss/oslc",
+	Version: "v0.3.0",
+	License: "MIT",
+	DistributionPoints: []oslc.DistributionPoint{{
+		Name:        "github.com/chainalysis-oss/oslc",
+		URL:         "https://proxy.golang.org/github.com/chainalysis-oss/oslc/@v/v0.3.0.zip",
+		Distributor: oslc.DistributorGo,
+	}},
+}
+
+var goOslcGetPackageInfoRequest = oslcv1alpha.GetPackageInfoRequest{
+	Name:        "github.com/chainalysis-oss/oslc",
+	Version:     "v0.3.0",
+	Distributor: oslc.DistributorGo,
+}
+
+var goOslcGetPackageInfoResponse = oslcv1alpha.GetPackageInfoResponse{
+	Name:    "github.com/chainalysis-oss/oslc",
+	Version: "v0.3.0",
+	License: "MIT",
+	DistributionPoints: []*oslcv1alpha.DistributionPoint{{
+		Name:        "github.com/chainalysis-oss/oslc",
+		Url:         "https://proxy.golang.org/github.com/chainalysis-oss/oslc/@v/v0.3.0.zip",
+		Distributor: oslc.DistributorGo,
+	}},
+}
+
 func TestServer_GetPackageInfo(t *testing.T) {
 	type fields struct {
 		options *serverOptions
@@ -471,6 +499,40 @@ func TestServer_GetPackageInfo(t *testing.T) {
 				c:   &cratesIoSnarkVMGetPackageInfoRequest,
 			},
 			want:    &cratesIoSnarkVMGetPackageInfoResponse,
+			wantErr: false,
+		},
+		{
+			name: "distributor_go_called",
+			fields: fields{
+				options: &serverOptions{
+					Datastore: func() oslc.Datastore {
+						mockDatastore := oslcMocks.NewMockDatastore(t)
+						mockDatastore.EXPECT().Retrieve(context.Background(), goOslcGetPackageInfoRequest.Name, goOslcGetPackageInfoRequest.Version, oslc.DistributorGo).
+							Return(oslc.Entry{}, oslc.ErrDatastoreObjectNotFound)
+						mockDatastore.EXPECT().Save(context.Background(), goOslcEntry).
+							Return(nil)
+						return mockDatastore
+					}(),
+					GoClient: func() oslc.DistributorClient {
+						mockClient := oslcMocks.NewMockDistributorClient(t)
+						mockClient.EXPECT().GetPackageVersion(goOslcGetPackageInfoRequest.Name, goOslcGetPackageInfoRequest.Version).
+							Return(goOslcEntry, nil)
+						return mockClient
+					}(),
+					Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+					LicenseIDNormalizer: func() oslc.LicenseIDNormalizer {
+						mockNormalizer := oslcMocks.NewMockLicenseIDNormalizer(t)
+						mockNormalizer.EXPECT().NormalizeID(context.Background(), goOslcEntry.License).
+							Return(goOslcEntry.License)
+						return mockNormalizer
+					}(),
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				c:   &goOslcGetPackageInfoRequest,
+			},
+			want:    &goOslcGetPackageInfoResponse,
 			wantErr: false,
 		},
 		{
