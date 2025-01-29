@@ -8,9 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
-      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # 5.2.0
+      - uses: jdx/mise-action@249c01ba271e19fa76eede7f766161cc95ace489 # 2.1.10
         with:
-          go-version-file: "./go.mod"
+          experimental: true
+      - run: mise run generate:certificates
       - name: Unit Tests
         uses: robherley/go-test-action@v0
   coverage:
