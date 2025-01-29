@@ -25,16 +25,34 @@ import (
 
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/urfave/cli/v2"
 )
 
 var Version = "0.0.0"
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	app := &cli.App{
+		Name:    "OSLC Request Server",
+		Usage:   "Run the OSLC request server",
+		Action:  rootAction,
+		Version: Version,
+		Commands: []*cli.Command{
+			healthCheckCommand,
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		logger.Error("failed to run app", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+}
+
+func rootAction(cCtx *cli.Context) error {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	config, err := createConfiguration("config.json")
 	if err != nil {
-		logger.Error("failed to create configuration", slog.String("error", translateValidationError(err).Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create configuration: %w", err)
 	}
 	logger = getLogger(config.Log.Level, config.Log.Kind)
 	logger.Info("starting oslc-request-server", slog.String("version", Version))
@@ -47,16 +65,14 @@ func main() {
 
 	dbPool, err := postgres.NewPool(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%d/%s", url.QueryEscape(config.Datastore.Username), url.QueryEscape(config.Datastore.Password), config.Datastore.Host, config.Datastore.Port, config.Datastore.Database))
 	if err != nil {
-		logger.Error("failed to create database pool", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create database pool: %w", err)
 	}
 
 	datastore, err := postgres.NewDatastore(
 		postgres.WithLogger(logger),
 		postgres.WithPool(dbPool))
 	if err != nil {
-		logger.Error("failed to create datastore", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create datastore: %w", err)
 	}
 
 	normalizer, err := spdxnormalizer.NewNormalizer(
@@ -64,8 +80,7 @@ func main() {
 		spdxnormalizer.WithLicenseRetriever(sll.AsLicenseRetriever()),
 	)
 	if err != nil {
-		logger.Error("failed to create SPDX normalizer", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create SPDX normalizer: %w", err)
 	}
 
 	oslcSrv, err := oslc.NewServer(
@@ -79,8 +94,7 @@ func main() {
 		oslc.WithLicenseIDNormalizer(normalizer),
 	)
 	if err != nil {
-		logger.Error("failed to create oslc server", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create oslc server: %w", err)
 	}
 
 	var metricsServer *metrics.Server
@@ -94,8 +108,7 @@ func main() {
 			metrics.WithLogger(metricsLogger),
 		)
 		if err != nil {
-			logger.Error("failed to create metrics server", slog.String("error", err.Error()))
-			os.Exit(1)
+			return fmt.Errorf("failed to create metrics server: %w", err)
 		}
 		optionalGrpcServerOptions = append(optionalGrpcServerOptions, grpc.WithPrometheusRegistry(metricsServer.GetPrometheusRegistry()))
 		optionalGrpcServerOptions = append(optionalGrpcServerOptions, grpc.WithPanicsTotalCounter(promauto.With(metricsServer.GetPrometheusRegistry()).NewCounter(prometheus.CounterOpts{
@@ -118,14 +131,12 @@ func main() {
 
 	grpcServer, err := grpc.NewServer(grpcServerOptions...)
 	if err != nil {
-		logger.Error("failed to create grpc server", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create grpc server: %w", err)
 	}
 
 	listeners, err := NewListeners(config)
 	if err != nil {
-		logger.Error("failed to create listeners", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to create listeners: %w", err)
 	}
 
 	g := &run.Group{}
@@ -134,8 +145,7 @@ func main() {
 
 	if config.Metrics.Enabled {
 		if metricsServer == nil {
-			logger.Error("metrics server is nil - this is almost certainly a bug")
-			os.Exit(1)
+			return fmt.Errorf("metrics server is nil - this is almost certainly a bug")
 		}
 		runMetricsServer(g, metricsServer, listeners.Metrics)
 	}
@@ -146,11 +156,12 @@ func main() {
 		if errors.As(err, &sigErr) {
 			logger.Debug("received signal", slog.String("signal", sigErr.Signal.String()))
 			logger.Info("oslc-request-server has shut down")
-			os.Exit(0)
+			return nil
 		}
-		logger.Error("server error", slog.String("error", err.Error()))
-		os.Exit(1)
+		return fmt.Errorf("server error: %w", err)
 	}
+
+	return nil
 }
 
 type Listeners struct {
