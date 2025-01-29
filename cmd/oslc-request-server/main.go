@@ -117,11 +117,7 @@ func rootAction(cCtx *cli.Context) error {
 		})))
 	}
 
-	if !config.Grpc.NoTLS {
-		optionalGrpcServerOptions = append(optionalGrpcServerOptions, grpc.WithTLS(config.TLS.CertFile, config.TLS.KeyFile))
-	} else {
-		logger.Info("gRPC server will not use TLS")
-	}
+	optionalGrpcServerOptions = append(optionalGrpcServerOptions, grpc.WithTLS(config.TLS.CertFile, config.TLS.KeyFile))
 
 	grpcServerOptions := []grpc.ServerOption{
 		grpc.WithLogger(rpcLogger),

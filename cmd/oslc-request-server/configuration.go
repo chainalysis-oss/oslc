@@ -16,7 +16,6 @@ type cfgDatastore struct {
 type cfgGrpc struct {
 	Interface string `default:"0.0.0.0" env:"OSLC_GRPC_INTERFACE" file_json:"grpc.interface" validate:"ip"`
 	Port      int    `default:"8080" env:"OSLC_GRPC_PORT" file_json:"grpc.port" validate:"min=1,max=65535"`
-	NoTLS     bool   `default:"false" env:"OSLC_GRPC_NO_TLS" file_json:"grpc.no_tls"`
 }
 
 type cfgMetrics struct {
