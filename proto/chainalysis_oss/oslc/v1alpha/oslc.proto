@@ -4,25 +4,57 @@ package chainalysis_oss.oslc.v1alpha;
 
 option go_package = "chainalysis_oss/oslc/v1alpha;oslcv1alpha";
 
+/**
+ * A request to get information about a software package.
+ */
 message GetPackageInfoRequest {
+  // The name of the package. This is generally just the name of the package as it is known in the distributors system.
+  // For example, to get information about the `requests` module in PyPi, the name would be `requests`.
+  // When the distributor is Maven, the name must be in the form `groupId:artifactId`.
   string name = 1;
+  // The version of the package for which licensing information is requested. If left empty, the function will assume
+  // the latest version and attempt to retrieve the licensing information for that version. Attempting to retrieve
+  // the latest version of a package may result in an error if the upstream distributor does not support this feature.
   string version = 2;
+  // The name of the distributor of the package.
+  // Valid values are:
+  // - `pypi` - Python Package Index.
+  // - `npm` - Node Package Manager.
+  // - `maven` - Maven Central Repository.
+  // - `cratesio` - Crates.io.
+  // - `go` - Go Modules served via proxy.golang.org.
   string distributor = 3;
 }
 
+/**
+ * The response to a GetPackageInfoRequest.
+ */
 message GetPackageInfoResponse {
+  // The name of the package.
   string name = 1;
+  // The version of the package.
   string version = 2;
+  // The license of the package as a SPDX license identifier.
   string license = 3;
+  // The distribution points for the package.
   repeated DistributionPoint distribution_points = 4;
 }
 
+/**
+ * A distribution point is a location where a software package can be obtained.
+ */
 message DistributionPoint {
+  // The name of the package in the distributor's system.
   string name = 1;
+  // The URL where the package can be obtained. This must be a URL to where a GET request can be made to obtain the package.
   string url = 2;
+  // The name of the distributor of the package.
   string distributor = 3;
 }
 
+/**
+ * The OSLC service provides licensing information for software packages.
+ */
 service OslcService {
   rpc GetPackageInfo(GetPackageInfoRequest) returns (GetPackageInfoResponse) {}
 }
