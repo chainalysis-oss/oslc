@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 	"net"
-	"strconv"
 	"time"
 )
 
@@ -20,14 +19,10 @@ var healthCheckCommand = &cli.Command{
 }
 
 func healthcheckAction(cCtx *cli.Context) error {
-	config, err := createConfiguration("config.json")
-	if err != nil {
-		return fmt.Errorf("failed to create configuration: %w", err)
-	}
-	logger := getLogger(config.Log.Level, config.Log.Kind)
+	logger := getLogger(cCtx.String(configLogLevelKey), cCtx.String(configLogKindKey), cCtx.App.Writer)
 
 	conn, err := grpc.NewClient(
-		net.JoinHostPort(config.Grpc.Interface, strconv.Itoa(config.Grpc.Port)),
+		net.JoinHostPort(cCtx.String(configGrpcInterfaceKey), cCtx.String(configGrpcPortKey)),
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})),
 	)
 	if err != nil {

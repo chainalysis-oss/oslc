@@ -1,8 +1,8 @@
 package main
 
 import (
+	"io"
 	"log/slog"
-	"os"
 	"strings"
 )
 
@@ -26,15 +26,15 @@ func logLevelFromStr(level string) slog.Level {
 // getLogger returns a logger based on the provided level and kind.
 // If the kind is not a valid kind, the logger is set to nil.
 // If the level is not a valid level, the level is set to info.
-func getLogger(level, kind string) *slog.Logger {
+func getLogger(level, kind string, writer io.Writer) *slog.Logger {
 	ho := &slog.HandlerOptions{
 		Level: logLevelFromStr(level),
 	}
 	switch kind {
 	case strings.ToLower("text"):
-		return slog.New(slog.NewTextHandler(os.Stdout, ho))
+		return slog.New(slog.NewTextHandler(writer, ho))
 	case strings.ToLower("json"):
-		return slog.New(slog.NewJSONHandler(os.Stdout, ho))
+		return slog.New(slog.NewJSONHandler(writer, ho))
 	default:
 		return nil
 	}
