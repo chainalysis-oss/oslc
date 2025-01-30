@@ -1,9 +1,9 @@
 package grpc
 
 import (
+	"buf.build/gen/go/chainalysis-oss/oslc/grpc/go/chainalysis_oss/oslc/v1alpha/oslcv1alphagrpc"
 	"context"
 	"fmt"
-	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/prometheus/client_golang/prometheus"
@@ -66,7 +66,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 
 	healthcheck := health.NewServer()
 	healthgrpc.RegisterHealthServer(s.gprcServer, healthcheck)
-	oslcv1alpha.RegisterOslcServiceServer(s.gprcServer, opts.oslcv1alpha)
+	oslcv1alphagrpc.RegisterOslcServiceServer(s.gprcServer, opts.oslcv1alphagrpc)
 	reflection.Register(s.gprcServer)
 	if opts.Metrics != nil {
 		opts.Metrics.InitializeMetrics(s.gprcServer)

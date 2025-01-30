@@ -11,10 +11,11 @@
 package acceptance
 
 import (
+	"buf.build/gen/go/chainalysis-oss/oslc/grpc/go/chainalysis_oss/oslc/v1alpha/oslcv1alphagrpc"
+	oslcv1alpha "buf.build/gen/go/chainalysis-oss/oslc/protocolbuffers/go/chainalysis_oss/oslc/v1alpha"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -132,7 +133,7 @@ func TestContainerStarts(t *testing.T) {
 
 	require.True(t, rs.IsRunning(), "container is not running")
 
-	client := oslcv1alpha.NewOslcServiceClient(setupGrpcClientForOSLC(t, ctx, rs))
+	client := oslcv1alphagrpc.NewOslcServiceClient(setupGrpcClientForOSLC(t, ctx, rs))
 
 	resp, err := client.GetPackageInfo(ctx, &oslcv1alpha.GetPackageInfoRequest{Name: "requests", Version: "2.32.0", Distributor: "pypi"})
 	require.NoError(t, err)

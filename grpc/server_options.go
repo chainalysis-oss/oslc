@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
+	"buf.build/gen/go/chainalysis-oss/oslc/grpc/go/chainalysis_oss/oslc/v1alpha/oslcv1alphagrpc"
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"log/slog"
@@ -12,7 +12,7 @@ type serverOptions struct {
 	Metrics            *grpcprom.ServerMetrics
 	PanicsTotalCounter prometheus.Counter
 	PrometheusRegistry *prometheus.Registry
-	oslcv1alpha        oslcv1alpha.OslcServiceServer
+	oslcv1alphagrpc    oslcv1alphagrpc.OslcServiceServer
 	CertFile           string
 	KeyFile            string
 }
@@ -71,9 +71,9 @@ func WithPrometheusRegistry(registry *prometheus.Registry) ServerOption {
 }
 
 // WithOslcServiceServer returns a ServerOption that uses the provided OslcServiceServer.
-func WithOslcServiceServer(oslcv1alpha oslcv1alpha.OslcServiceServer) ServerOption {
+func WithOslcServiceServer(oslcv1alpha oslcv1alphagrpc.OslcServiceServer) ServerOption {
 	return newFuncClientOption(func(opts *serverOptions) {
-		opts.oslcv1alpha = oslcv1alpha
+		opts.oslcv1alphagrpc = oslcv1alpha
 	})
 }
 
