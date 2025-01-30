@@ -46,6 +46,7 @@ func NewServer(options ...ServerOption) (*Server, error) {
 		unaryInterceptors = append(unaryInterceptors, opts.Metrics.UnaryServerInterceptor())
 	}
 	unaryInterceptors = append(unaryInterceptors, logging.UnaryServerInterceptor(interceptorLogger(opts.Logger)))
+	unaryInterceptors = append(unaryInterceptors, newGrpcErrorHandler(opts.Logger))
 	unaryInterceptors = append(unaryInterceptors, recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(newGrpcRecoveryHandler(opts.Logger, opts.PanicsTotalCounter))))
 
 	grpcOpts := make([]grpc.ServerOption, 0)
@@ -122,3 +123,24 @@ func newGrpcRecoveryHandler(logger *slog.Logger, panicsTotal prometheus.Counter)
 		return status.Errorf(codes.Internal, "%s", p)
 	}
 }
+
+func newGrpcErrorHandler(logger *slog.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		m, err := handler(ctx, req)
+		if err == nil {
+			return m, err
+		}
+
+		_, ok := status.FromError(err)
+		if ok {
+			return m, err
+		}
+		logger.Error("non-grpc error encountered, returning internal server error instead", slog.String("error", err.Error()))
+		return m, InternalServerError
+	}
+}
+
+// InternalServerError is a status error that represents an internal server error. This is a fairly non-descriptive
+// error intended to hide the details of the error from the client. It should rarely be used, and should generally be
+// indicative of a bug in error handling somewhere in the call chain.
+var InternalServerError = status.Error(codes.Internal, "internal server error")

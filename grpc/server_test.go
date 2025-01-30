@@ -9,6 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"log/slog"
 	"net"
@@ -117,4 +119,27 @@ func TestNewGrpcRecoveryHandler(t *testing.T) {
 	require.Contains(t, logs.String(), "recovered from panic")
 	// Canonical way of retrieving the value from a prometheus.Counter: https://github.com/prometheus/client_golang/issues/486
 	require.Equal(t, 1, int(testutil.ToFloat64(counter)))
+}
+
+func TestNewGrpcErrorHandler(t *testing.T) {
+	cases := []struct {
+		err         error
+		expectedErr error
+	}{
+		{err: nil, expectedErr: nil},
+		{err: io.EOF, expectedErr: InternalServerError},
+		{err: status.Errorf(codes.Internal, "test"), expectedErr: status.Errorf(codes.Internal, "test")},
+	}
+	for _, c := range cases {
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		interceptor := newGrpcErrorHandler(logger)
+		returner := func(err error) func(ctx context.Context, req any) (any, error) {
+			return func(ctx context.Context, req any) (any, error) {
+				return nil, c.err
+			}
+		}
+		_, err := interceptor(context.Background(), nil, nil, returner(c.err))
+		require.Equal(t, c.expectedErr, err)
+
+	}
 }
