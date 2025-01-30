@@ -1,9 +1,9 @@
 package oslc
 
 import (
+	oslcv1alpha "buf.build/gen/go/chainalysis-oss/oslc/protocolbuffers/go/chainalysis_oss/oslc/v1alpha"
 	"context"
 	"github.com/chainalysis-oss/oslc"
-	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	oslcMocks "github.com/chainalysis-oss/oslc/mocks/oslc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

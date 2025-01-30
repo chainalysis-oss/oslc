@@ -5,6 +5,8 @@ go 1.22.7
 toolchain go1.23.2
 
 require (
+	buf.build/gen/go/chainalysis-oss/oslc/grpc/go v1.5.1-20250130073607-7008aeb5145e.2
+	buf.build/gen/go/chainalysis-oss/oslc/protocolbuffers/go v1.36.4-20250130073607-7008aeb5145e.1
 	github.com/BoRuDar/configuration/v4 v4.5.1
 	github.com/go-enry/go-license-detector/v4 v4.3.1
 	github.com/go-playground/validator/v10 v10.23.0
@@ -19,7 +21,6 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.34.0
 	github.com/urfave/cli/v2 v2.27.5
 	google.golang.org/grpc v1.69.2
-	google.golang.org/protobuf v1.36.0
 )
 
 require (
@@ -115,6 +116,7 @@ require (
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gonum.org/v1/gonum v0.8.2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241219192143-6b3ec007d9bb // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

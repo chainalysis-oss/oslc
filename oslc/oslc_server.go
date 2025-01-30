@@ -1,10 +1,11 @@
 package oslc
 
 import (
+	"buf.build/gen/go/chainalysis-oss/oslc/grpc/go/chainalysis_oss/oslc/v1alpha/oslcv1alphagrpc"
+	oslcv1alpha "buf.build/gen/go/chainalysis-oss/oslc/protocolbuffers/go/chainalysis_oss/oslc/v1alpha"
 	"context"
 	"errors"
 	"github.com/chainalysis-oss/oslc"
-	oslcv1alpha "github.com/chainalysis-oss/oslc/gen/oslc/oslc/v1alpha"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log/slog"
@@ -12,7 +13,7 @@ import (
 
 type Server struct {
 	options *serverOptions
-	oslcv1alpha.UnimplementedOslcServiceServer
+	oslcv1alphagrpc.UnimplementedOslcServiceServer
 }
 
 type InvalidDistributorError struct {
