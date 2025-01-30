@@ -4,6 +4,24 @@ Welcome to the Open Software License Catalogue (OSLC), a comprehensive and robus
 of identifying and managing software licenses. OSLC is an essential tool for developers, legal teams, and organizations
 committed to ensuring compliance with software licensing requirements.
 
+## Example Usage
+
+```bash
+grpcurl -d '{"name":"requests","distributor":"pypi"}' localhost:8080 chainalysis_oss.oslc.v1alpha.OslcService.GetPackageInfo
+{
+  "name": "requests",
+  "version": "2.32.3",
+  "license": "Apache-2.0",
+  "distributionPoints": [
+    {
+      "name": "requests",
+      "url": "https://pypi.org/project/requests/",
+      "distributor": "pypi"
+    }
+  ]
+}
+```
+
 ## About OSLC
 
 In today's complex software ecosystem, understanding and adhering to various software licenses is crucial. OSLC
