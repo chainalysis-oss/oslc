@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package oslc.oslc.v1alpha;
+package chainalysis_oss.oslc.v1alpha;
 
-option go_package = "oslc/gen/oslc/v1alpha;oslcv1alpha";
+option go_package = "chainalysis_oss/oslc/v1alpha;oslcv1alpha";
 
 message GetPackageInfoRequest {
   string name = 1;
