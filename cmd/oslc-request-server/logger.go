@@ -35,6 +35,8 @@ func getLogger(level, kind string, writer io.Writer) *slog.Logger {
 		return slog.New(slog.NewTextHandler(writer, ho))
 	case strings.ToLower("json"):
 		return slog.New(slog.NewJSONHandler(writer, ho))
+	case strings.ToLower("discard"):
+		return slog.New(slog.NewTextHandler(io.Discard, ho))
 	default:
 		return nil
 	}

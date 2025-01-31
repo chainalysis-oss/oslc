@@ -97,15 +97,22 @@ func TestGetEnv(t *testing.T) {
 	}
 }
 
-func createContextWithStringFlag(t *testing.T, name string, value string) *cli.Context {
+func createContextWithStringFlags(t *testing.T, flags map[string]string) *cli.Context {
 	t.Helper()
 	fs := flag.NewFlagSet("", flag.ExitOnError)
 	app := cli.NewApp()
-	fs.String(name, "default", "")
-	err := fs.Set(name, value)
-	require.NoError(t, err)
+	for name, value := range flags {
+		fs.String(name, "default", "")
+		err := fs.Set(name, value)
+		require.NoError(t, err)
+	}
 
 	return cli.NewContext(app, fs, nil)
+}
+
+func createContextWithStringFlag(t *testing.T, name string, value string) *cli.Context {
+	t.Helper()
+	return createContextWithStringFlags(t, map[string]string{name: value})
 }
 
 func createContextWithIntFlag(t *testing.T, name string, value int) *cli.Context {
@@ -180,6 +187,7 @@ func TestCfgStringMustBeValidLoggingKind(t *testing.T) {
 	}{
 		{"text"},
 		{"json"},
+		{"discard"},
 	}
 
 	for _, tt := range cases {

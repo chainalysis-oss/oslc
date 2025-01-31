@@ -137,10 +137,10 @@ func cfgStringMustBeValidLoggingLevel(key string) func(cCtx *cli.Context, s stri
 func cfgStringMustBeValidLoggingKind(key string) func(cCtx *cli.Context, s string) error {
 	return func(cCtx *cli.Context, s string) error {
 		switch s {
-		case "text", "json":
+		case "text", "json", "discard":
 			return nil
 		default:
-			return &configValidationError{key: key, value: s, detail: "value must be one of text, json"}
+			return &configValidationError{key: key, value: s, detail: "value must be one of text, json or discard"}
 		}
 	}
 }
@@ -241,7 +241,7 @@ var flags = []cli.Flag{
 	altsrc.NewStringFlag(&cli.StringFlag{
 		Name:     configLogKindKey,
 		Value:    "json",
-		Usage:    "Log kind for OSLC - valid values are text and json",
+		Usage:    "Log kind for OSLC - valid values are text, json and discard. Setting the logger to discard will discard all logs",
 		EnvVars:  []string{configLogKindEnv},
 		FilePath: configLogKindFile,
 		Action:   cfgStringMustBeValidLoggingKind(configLogKindKey),
