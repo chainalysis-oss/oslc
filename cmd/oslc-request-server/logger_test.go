@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"io"
 	"log/slog"
-	"os"
 	"strings"
 	"testing"
 )
@@ -75,7 +74,7 @@ func Test_getLogger(t *testing.T) {
 				level: "info",
 				kind:  "text",
 			},
-			want: slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			want: slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
 				Level: slog.LevelInfo,
 			})),
 		},
@@ -85,7 +84,7 @@ func Test_getLogger(t *testing.T) {
 				level: "warn",
 				kind:  "json",
 			},
-			want: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			want: slog.New(slog.NewJSONHandler(io.Discard, &slog.HandlerOptions{
 				Level: slog.LevelWarn,
 			})),
 		},
