@@ -144,3 +144,49 @@ func TestCfgIntMustBeValidPort(t *testing.T) {
 	err = cfgIntMustBeValidPort("key")(cCtx, 65535)
 	require.NoError(t, err)
 }
+
+func TestCfgStringMustBeValidLoggingLevel(t *testing.T) {
+	cCtx := createContextWithStringFlag(t, "key", "invalid")
+	err := cfgStringMustBeValidLoggingLevel("key")(cCtx, "invalid")
+	var cfgValErr *configValidationError
+	require.ErrorAs(t, err, &cfgValErr)
+
+	cases := []struct {
+		value string
+	}{
+		{"debug"},
+		{"info"},
+		{"warn"},
+		{"error"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.value, func(t *testing.T) {
+			cCtx = createContextWithStringFlag(t, "key", tt.value)
+			err = cfgStringMustBeValidLoggingLevel("key")(cCtx, tt.value)
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestCfgStringMustBeValidLoggingKind(t *testing.T) {
+	cCtx := createContextWithStringFlag(t, "key", "invalid")
+	err := cfgStringMustBeValidLoggingKind("key")(cCtx, "invalid")
+	var cfgValErr *configValidationError
+	require.ErrorAs(t, err, &cfgValErr)
+
+	cases := []struct {
+		value string
+	}{
+		{"text"},
+		{"json"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.value, func(t *testing.T) {
+			cCtx = createContextWithStringFlag(t, "key", tt.value)
+			err = cfgStringMustBeValidLoggingKind("key")(cCtx, tt.value)
+			require.NoError(t, err)
+		})
+	}
+}

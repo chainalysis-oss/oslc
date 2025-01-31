@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/stretchr/testify/require"
+	"io"
 	"log/slog"
 	"os"
 	"strings"
@@ -98,7 +99,7 @@ func Test_getLogger(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		logger := getLogger(tt.args.level, tt.args.kind)
+		logger := getLogger(tt.args.level, tt.args.kind, io.Discard)
 		require.Equal(t, logger, tt.want)
 	}
 }

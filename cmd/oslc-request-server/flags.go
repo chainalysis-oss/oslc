@@ -123,6 +123,28 @@ func cfgIntMustBeValidPort(key string) func(cCtx *cli.Context, i int) error {
 	}
 }
 
+func cfgStringMustBeValidLoggingLevel(key string) func(cCtx *cli.Context, s string) error {
+	return func(cCtx *cli.Context, s string) error {
+		switch s {
+		case "debug", "info", "warn", "error":
+			return nil
+		default:
+			return &configValidationError{key: key, value: s, detail: "value must be one of debug, info, warn, error"}
+		}
+	}
+}
+
+func cfgStringMustBeValidLoggingKind(key string) func(cCtx *cli.Context, s string) error {
+	return func(cCtx *cli.Context, s string) error {
+		switch s {
+		case "text", "json":
+			return nil
+		default:
+			return &configValidationError{key: key, value: s, detail: "value must be one of text, json"}
+		}
+	}
+}
+
 var flags = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "config",
@@ -214,14 +236,7 @@ var flags = []cli.Flag{
 		Usage:    "Log level for OSLC - valid values are debug, info, warn, error",
 		EnvVars:  []string{configLogLevelEnv},
 		FilePath: configLogLevelFile,
-		Action: func(context *cli.Context, s string) error {
-			switch s {
-			case "debug", "info", "warn", "error":
-				return nil
-			default:
-				return &configValidationError{key: configLogLevelKey, value: s, detail: "value must be one of debug, info, warn, error"}
-			}
-		},
+		Action:   cfgStringMustBeValidLoggingLevel(configLogLevelKey),
 	}),
 	altsrc.NewStringFlag(&cli.StringFlag{
 		Name:     configLogKindKey,
@@ -229,14 +244,7 @@ var flags = []cli.Flag{
 		Usage:    "Log kind for OSLC - valid values are text and json",
 		EnvVars:  []string{configLogKindEnv},
 		FilePath: configLogKindFile,
-		Action: func(context *cli.Context, s string) error {
-			switch s {
-			case "text", "json":
-				return nil
-			default:
-				return &configValidationError{key: configLogKindKey, value: s, detail: "value must be one of text, json"}
-			}
-		},
+		Action:   cfgStringMustBeValidLoggingKind(configLogKindKey),
 	}),
 	altsrc.NewStringFlag(&cli.StringFlag{
 		Name:     configTlsCertFilePathKey,
