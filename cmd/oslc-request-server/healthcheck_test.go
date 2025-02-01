@@ -24,11 +24,15 @@ func TestHealthcheckAction(t *testing.T) {
 	require.NoError(t, err)
 	go grpcServer.Serve(lis)
 	defer grpcServer.Stop()
-	p := strings.Split(lis.Addr().String(), ":")[1]
-	t.Setenv("OSLC_GRPC_INTERFACE", "127.0.0.1")
-	t.Setenv("OSLC_GRPC_PORT", p)
 
-	require.NoError(t, healthcheckAction(nil))
+	cCtx := createContextWithStringFlags(t, map[string]string{
+		configGrpcInterfaceKey: strings.Split(lis.Addr().String(), ":")[0],
+		configGrpcPortKey:      strings.Split(lis.Addr().String(), ":")[1],
+		configLogLevelKey:      "info",
+		configLogKindKey:       "discard",
+	})
+
+	require.NoError(t, healthcheckAction(cCtx))
 	healthcheck.SetServingStatus("", healthgrpc.HealthCheckResponse_NOT_SERVING)
-	require.Error(t, healthcheckAction(nil))
+	require.Error(t, healthcheckAction(cCtx))
 }

@@ -7,7 +7,6 @@ toolchain go1.23.2
 require (
 	buf.build/gen/go/chainalysis-oss/oslc/grpc/go v1.5.1-20250130073607-7008aeb5145e.2
 	buf.build/gen/go/chainalysis-oss/oslc/protocolbuffers/go v1.36.4-20250130073607-7008aeb5145e.1
-	github.com/BoRuDar/configuration/v4 v4.5.1
 	github.com/go-enry/go-license-detector/v4 v4.3.1
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1
@@ -27,6 +26,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
+	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220930113650-c6815a8c17ad // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
