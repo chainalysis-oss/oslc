@@ -94,13 +94,13 @@ func TestContainerStarts(t *testing.T) {
 		ExposedPorts: []string{"8080/tcp"},
 		Entrypoint:   []string{"/usr/bin/oslc-request-server"},
 		Env: map[string]string{
-			"DATASTORE_HOST":     pgContainerHost,
-			"DATASTORE_PORT":     "5432",
-			"DATASTORE_DB":       "test",
-			"DATASTORE_USER":     "user",
-			"DATASTORE_PASSWORD": "password",
-			"OSLC_TLS_CERT_FILE": "/oslc_tls_cert_file",
-			"OSLC_TLS_KEY_FILE":  "/oslc_tls_key_file",
+			"OSLC_DATASTORE_HOST":     pgContainerHost,
+			"OSLC_DATASTORE_PORT":     "5432",
+			"OSLC_DATASTORE_DB":       "test",
+			"OSLC_DATASTORE_USER":     "user",
+			"OSLC_DATASTORE_PASSWORD": "password",
+			"OSLC_TLS_CERT_FILE_PATH": "/oslc_tls_cert_file",
+			"OSLC_TLS_KEY_FILE_PATH":  "/oslc_tls_key_file",
 		},
 		Files: []testcontainers.ContainerFile{
 			{
