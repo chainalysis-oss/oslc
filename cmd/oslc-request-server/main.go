@@ -96,6 +96,7 @@ the 'datastore.username' configuration key is '--datastore.username'. These are 
 			}
 			return nil
 		},
+		Writer: os.Stdout,
 	}
 
 	logger := slog.New(slog.NewJSONHandler(app.Writer, nil))
@@ -133,7 +134,6 @@ func asMarkdownAction(cCtx *cli.Context) error {
 }
 
 func rootAction(cCtx *cli.Context) error {
-	fmt.Println(cCtx.String("datastore.username"))
 	logger := slog.New(slog.NewJSONHandler(cCtx.App.Writer, nil))
 	logger = getLogger(cCtx.String(configLogLevelKey), cCtx.String(configLogKindKey), cCtx.App.Writer)
 	logger.Info("starting oslc-request-server", slog.String("version", Version))
