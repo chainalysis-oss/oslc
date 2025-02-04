@@ -74,6 +74,7 @@ resource "ovh_iam_policy" "spacelift-oslc" {
     "publicCloudProject:apiovh:kube/*",
     "publicCloudProject:apiovh:kube/nodepool/*",
     "publicCloudProject:apiovh:network/private/*",
+    "publicCloudProject:apiovh:region/network/subnet/gateway/*",
     "account:apiovh:iam/policy/*"
   ]
 }
