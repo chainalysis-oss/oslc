@@ -25,3 +25,16 @@ resource "ovh_cloud_project_kube" "oslc_primary" {
   region       = "DE1"
 }
 
+resource "ovh_iam_polcy" "spacelift-oslc" {
+  name        = "spacelift-oslc-service-account"
+  description = "Policy associated with managing OSLC via Spacelift"
+  identities = [
+    "urn:v1:eu:identity:credential:hm874490-ovh/oauth2-6609ec93ff0ec63f"
+  ]
+  resources = [
+    "urn:v1:eu:resource:*"
+  ]
+  allow = [
+    "publicCloudProject:apiovh:kube/*"
+  ]
+}
