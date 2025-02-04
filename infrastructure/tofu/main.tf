@@ -18,3 +18,10 @@ provider "spacelift" {}
 provider "ovh" {
   endpoint = "ovh-eu"
 }
+
+resource "ovh_cloud_project_kube" "oslc_primary" {
+  service_name = "ded08a2579ef40d98ed234ccb2061ffe"
+  name         = "oslc_primary"
+  region       = "DE1"
+}
+
