@@ -23,6 +23,13 @@ resource "ovh_cloud_project_kube" "oslc_primary" {
   service_name = "ded08a2579ef40d98ed234ccb2061ffe"
   name         = "oslc_primary"
   region       = "DE1"
+
+  private_network_id = tolist(ovh_cloud_project_network_private.oslc_private.regions_attributes[*].openstackid)[0]
+  nodes_subnet_id    = ovh_cloud_project_network_private_subnet.oslc_private_subnet.id
+  private_network_configuration {
+    default_vrack_gateway              = ""
+    private_network_routing_as_default = false
+  }
 }
 
 resource "ovh_cloud_project_kube_nodepool" "node_pool" {
