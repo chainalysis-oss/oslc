@@ -25,7 +25,7 @@ resource "ovh_cloud_project_kube" "oslc_primary" {
   region       = "DE1"
 }
 
-resource "ovh_iam_polcy" "spacelift-oslc" {
+resource "ovh_iam_policy" "spacelift-oslc" {
   name        = "spacelift-oslc-service-account"
   description = "Policy associated with managing OSLC via Spacelift"
   identities = [
