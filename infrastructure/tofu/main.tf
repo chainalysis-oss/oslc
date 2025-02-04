@@ -35,6 +35,25 @@ resource "ovh_cloud_project_kube_nodepool" "node_pool" {
   min_nodes     = 1
 }
 
+resource "ovh_cloud_project_network_private" "oslc_private" {
+  service_name = "ded08a2579ef40d98ed234ccb2061ffe"
+  vlan_id      = 42
+  name         = "oslc_private"
+  regions      = ["DE1"]
+}
+
+resource "ovh_cloud_project_network_private_subnet" "oslc_private_subnet" {
+  service_name = "ded08a2579ef40d98ed234ccb2061ffe"
+  network_id   = ovh_cloud_project_network_private.oslc_private.id
+
+  region     = "DE1"
+  start      = "10.0.42.100"
+  end        = "10.0.42.200"
+  network    = "10.0.42.0/24"
+  dhcp       = true
+  no_gateway = false
+}
+
 resource "ovh_iam_policy" "spacelift-oslc" {
   name        = "spacelift-oslc-service-account"
   description = "Policy associated with managing OSLC via Spacelift"
