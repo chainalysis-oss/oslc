@@ -36,6 +36,7 @@ resource "ovh_iam_policy" "spacelift-oslc" {
   ]
   allow = [
     "publicCloudProject:apiovh:kube/*",
+    "publicCloudProject:apiovh:kube/nodepool/*"
     "account:apiovh:iam/policy/*"
   ]
 }
