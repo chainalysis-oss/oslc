@@ -74,9 +74,23 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	}, nil
 }
 
+func nameIsValid(name string) bool {
+	s := strings.Split(name, ":")
+	if len(s) != 2 {
+		return false
+	}
+	if s[0] == "" || s[1] == "" {
+		return false
+	}
+	return true
+}
+
 // GetPackageVersion returns the package with the given name and version.
 // If version is empty, the latest version is returned.
 func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
+	if !nameIsValid(name) {
+		return oslc.Entry{}, fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)
+	}
 	if version == "latest" {
 		version = ""
 	}
@@ -89,27 +103,33 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 	normGroupId := strings.ReplaceAll(groupId, ".", "/")
 	artifactId = strings.Split(name, ":")[1]
 	if version == "" {
-		version, err = c.GetLatestVersion(groupId, artifactId)
+		version, err = c.getLatestVersion(groupId, artifactId)
 		if err != nil {
-			return oslc.Entry{}, err
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: err}
 		}
 	}
 	path := fmt.Sprintf("remotecontent?filepath=%s/%s/%s/%s-%s.pom", normGroupId, artifactId, version, artifactId, version)
 	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
 	if err != nil {
-		return oslc.Entry{}, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return oslc.Entry{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: err}
 	}
 
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		ok, err := c.doesPackageExist(groupId, artifactId)
+		if err != nil {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: err}
+		}
+		if !ok {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)}
+		}
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: fmt.Errorf("%w: %s", oslc.ErrVersionNotFound, version)}
+	}
 
 	var pkg mavenPOM
 	err = xml.NewDecoder(resp.Body).Decode(&pkg)
 	if err != nil {
-		return pkg.AsEntry(), err
+		return pkg.AsEntry(), oslc.DistributorError{Distributor: oslc.DistributorMaven, Err: err}
 	}
 	return pkg.AsEntry(), nil
 }
@@ -133,7 +153,29 @@ type solrResponse struct {
 	} `json:"response"`
 }
 
-func (c *Client) GetLatestVersion(groupId, artifactId string) (string, error) {
+func (c *Client) doesPackageExist(groupId, artifactId string) (bool, error) {
+	path := fmt.Sprintf("solrsearch/select?q=g:%s+AND+a:%s&rows=1&wt=json", groupId, artifactId)
+	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("error determining if package exists: unexpected status code: %d", resp.StatusCode)
+	}
+
+	var pkg solrResponse
+	err = json.NewDecoder(resp.Body).Decode(&pkg)
+	if err != nil {
+		return false, err
+	}
+	if len(pkg.Response.Docs) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (c *Client) getLatestVersion(groupId, artifactId string) (string, error) {
 	path := fmt.Sprintf("solrsearch/select?q=g:%s+AND+a:%s&rows=1&wt=json", groupId, artifactId)
 	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
 	if err != nil {
@@ -141,7 +183,7 @@ func (c *Client) GetLatestVersion(groupId, artifactId string) (string, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return "", fmt.Errorf("error getting latest version: unexpected status code: %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -150,6 +192,9 @@ func (c *Client) GetLatestVersion(groupId, artifactId string) (string, error) {
 	err = json.NewDecoder(resp.Body).Decode(&pkg)
 	if err != nil {
 		return "", err
+	}
+	if len(pkg.Response.Docs) == 0 {
+		return "", fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, fmt.Sprintf("%s:%s", groupId, artifactId))
 	}
 	return pkg.Response.Docs[0].LatestVersion, nil
 }

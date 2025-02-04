@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build github.com/chainalysis-oss/oslc/cmd/oslc-request-server" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
+    <module name="oslc" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="OSLC_TLS_CERT_FILE_PATH" value="build/tls/oslc-request-server.internal.crt" />
+      <env name="OSLC_TLS_KEY_FILE_PATH" value="build/tls/oslc-request-server.internal.key" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="github.com/chainalysis-oss/oslc/cmd/oslc-request-server" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/cmd/oslc-request-server/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

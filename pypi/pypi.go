@@ -81,19 +81,29 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 
 	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
 	if err != nil {
-		return oslc.Entry{}, err
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: err}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		ok, err := c.packageExists(name)
+		if err != nil {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: err}
+		}
+		if !ok {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)}
+		}
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: fmt.Errorf("%w: %s", oslc.ErrVersionNotFound, version)}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return oslc.Entry{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: fmt.Errorf("unexpected status code: %d", resp.StatusCode)}
 	}
-
-	defer resp.Body.Close()
 
 	var pkg pypiPackageResponse
 	err = json.NewDecoder(resp.Body).Decode(&pkg)
 	if err != nil {
-		return pkg.AsEntry(), err
+		return pkg.AsEntry(), oslc.DistributorError{Distributor: oslc.DistributorPypi, Err: err}
 	}
 	return pkg.AsEntry(), nil
 }
@@ -102,4 +112,19 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 // with an empty version.
 func (c *Client) GetPackage(name string) (oslc.Entry, error) {
 	return c.GetPackageVersion(name, "")
+}
+
+func (c *Client) packageExists(name string) (bool, error) {
+	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/pypi/%s/json", c.options.BaseURL, name))
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 }

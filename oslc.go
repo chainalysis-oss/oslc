@@ -40,6 +40,27 @@ type Datastore interface {
 	DatastoreRetriever
 }
 
+var ErrNoSuchPackage = errors.New("no such package")
+
+// DistributorClient is an interface that represents a client that can communicate with a distributor.
+//
+// Errors from the distributor must be returned as a [DistributorError]. The distributor name must be set to the
+// distributor's name. The format of the name is implementation-specific. The [DistributorError] will ensure the
+// underlying error is not exposed to the caller. Exceptions to this rule are errors indicating that a specific
+// package or version is not found. These errors must be returned as a [DistributionError] wrapping either
+// [ErrNoSuchPackage] or [ErrVersionNotFound].
+//
+// GetPackage returns the [Entry] object that corresponds to the provided name. If the package is not found,
+// the implementation must return [ErrNoSuchPackage]. If a package version is not found, the implementation
+// must return [ErrVersionNotFound]. If an error occurs while communicating with the distributor, the implementation
+// must return a [DistributorError] with the distributor name set to the distributor's name. The format of the name
+// is implementation-specific.
+//
+// GetPackageVersion returns the [Entry] object that corresponds to the provided name and version. If the package
+// version is not found, the implementation must return [ErrVersionNotFound]. If the package is not found, the
+// implementation must return [ErrNoSuchPackage]. If an error occurs while communicating
+// with the distributor, the implementation must return a [DistributorError] with the distributor name set to the
+// distributor's name. The format of the name and version is implementation-specific.
 type DistributorClient interface {
 	GetPackage(name string) (Entry, error)
 	GetPackageVersion(name, version string) (Entry, error)
@@ -93,4 +114,21 @@ func (e DistributorError) Error() string {
 	}
 
 	return fmt.Sprintf("error communicating with %s: %s", e.Distributor, e.Err)
+}
+
+// Unwrap returns the underlying error of the DistributorError so that the caller can inspect the error. If the
+// underlying error is not one of the following errors, Unwrap will return nil:
+// - [ErrNoSuchPackage]
+// - [ErrVersionNotFound]
+//
+// This allows us to hide implementation-specific errors from the caller, yet allow the caller to use [errors.Is] to
+// determine if the DistributorError is caused by specific errors.
+func (e DistributorError) Unwrap() error {
+	if e.Err == nil {
+		return nil
+	}
+	if errors.Is(e.Err, ErrNoSuchPackage) || errors.Is(e.Err, ErrVersionNotFound) {
+		return e.Err
+	}
+	return nil
 }
