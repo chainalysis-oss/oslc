@@ -25,6 +25,16 @@ resource "ovh_cloud_project_kube" "oslc_primary" {
   region       = "DE1"
 }
 
+resource "ovh_cloud_project_kube_nodepool" "node_pool" {
+  service_name  = "ded08a2579ef40d98ed234ccb2061ffe"
+  kube_id       = ovh_cloud_project_kube.oslc_primary.id
+  name          = "pool-1"
+  flavor_name   = "d2-4"
+  desired_nodes = 1
+  max_nodes     = 2
+  min_nodes     = 1
+}
+
 resource "ovh_iam_policy" "spacelift-oslc" {
   name        = "spacelift-oslc-service-account"
   description = "Policy associated with managing OSLC via Spacelift"
