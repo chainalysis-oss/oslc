@@ -47,8 +47,8 @@ var ErrNoSuchPackage = errors.New("no such package")
 // Errors from the distributor must be returned as a [DistributorError]. The distributor name must be set to the
 // distributor's name. The format of the name is implementation-specific. The [DistributorError] will ensure the
 // underlying error is not exposed to the caller. Exceptions to this rule are errors indicating that a specific
-// package or version is not found. These errors must be returned as [ErrNoSuchPackage] and [ErrVersionNotFound],
-// respectively.
+// package or version is not found. These errors must be returned as a [DistributionError] wrapping either
+// [ErrNoSuchPackage] or [ErrVersionNotFound].
 //
 // GetPackage returns the [Entry] object that corresponds to the provided name. If the package is not found,
 // the implementation must return [ErrNoSuchPackage]. If a package version is not found, the implementation
