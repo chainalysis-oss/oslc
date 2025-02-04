@@ -42,6 +42,15 @@ resource "ovh_cloud_project_kube_nodepool" "node_pool" {
   min_nodes     = 1
 }
 
+resource "ovh_cloud_project_gateway" "oslc_private_gateway" {
+  service_name = "ded08a2579ef40d98ed234ccb2061ffe"
+  name         = "gateway"
+  model        = "s"
+  region       = "DE1"
+  network_id   = tolist(ovh_cloud_project_network_private.oslc_private.regions_attributes[*].openstackid)[0]
+  subnet_id    = ovh_cloud_project_network_private_subnet.oslc_private_subnet.id
+}
+
 resource "ovh_cloud_project_network_private" "oslc_private" {
   service_name = "ded08a2579ef40d98ed234ccb2061ffe"
   vlan_id      = 42
