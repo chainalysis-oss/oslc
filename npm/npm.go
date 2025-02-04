@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/chainalysis-oss/oslc"
 	ownHTTP "github.com/chainalysis-oss/oslc/http"
+	"io"
 	"net/http"
+	"strings"
 )
 
 // npmPackageResponse is an NPM package. It is the result of a query to the NPM API as specified in the NPM API documentation
@@ -88,6 +90,9 @@ func NewClient(options ...ClientOption) (*Client, error) {
 // GetPackageVersion returns the package with the given name and version.
 // If version is empty, the latest version is returned.
 func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
+	if name == "" {
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorNpm, Err: fmt.Errorf("%w: package is empty", oslc.ErrNoSuchPackage)}
+	}
 	path := fmt.Sprintf("%s/%s", name, version)
 	if version == "" {
 		path = fmt.Sprintf("%s", name)
@@ -95,7 +100,16 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 
 	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
 	if err != nil {
-		return oslc.Entry{}, err
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorNpm, Err: err}
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 400))
+		defer resp.Body.Close()
+		if strings.Contains(string(body), "version not found:") {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorNpm, Err: fmt.Errorf("%w: %s", oslc.ErrVersionNotFound, name)}
+		}
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorNpm, Err: fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)}
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -107,7 +121,7 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 	var pkg npmPackageResponse
 	err = json.NewDecoder(resp.Body).Decode(&pkg)
 	if err != nil {
-		return pkg.AsEntry(), err
+		return pkg.AsEntry(), oslc.DistributorError{Distributor: oslc.DistributorNpm, Err: err}
 	}
 	return pkg.AsEntry(), nil
 }

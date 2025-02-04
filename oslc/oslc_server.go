@@ -74,6 +74,12 @@ func (s Server) GetPackageInfo(ctx context.Context, request *oslcv1alpha.GetPack
 		entry, err = s.getPackageFromDistributor(ctx, request.Distributor, request.Name, request.Version)
 
 		if err != nil {
+			if errors.Is(err, oslc.ErrNoSuchPackage) {
+				return nil, status.Error(codes.NotFound, "package not found")
+			}
+			if errors.Is(err, oslc.ErrVersionNotFound) {
+				return nil, status.Error(codes.NotFound, "version not found")
+			}
 			s.options.Logger.Error("failed to retrieve from upstream", slog.String("error", err.Error()))
 			return nil, status.Error(codes.Internal, "internal server error")
 		}

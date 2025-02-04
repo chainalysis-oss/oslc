@@ -34,11 +34,11 @@ func (c *Client) GetPackage(name string) (oslc.Entry, error) {
 func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 	vi, err := c.getInfo(name, version)
 	if err != nil {
-		return oslc.Entry{}, err
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: err}
 	}
 	license, err := c.getLicense(name, vi.Version)
 	if err != nil {
-		return oslc.Entry{}, err
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: err}
 	}
 	return oslc.Entry{
 		Name:    name,
@@ -137,6 +137,21 @@ type versionInfo struct {
 	Time    string
 }
 
+func (c *Client) moduleExists(name string) (bool, error) {
+	resp, err := c.options.HttpClient.Query(c.options.BaseURL + "/" + name + "/@latest")
+	if err != nil {
+		return false, fmt.Errorf("constructing HTTP query for upstream '%s': %s", c.options.BaseURL, err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	return false, fmt.Errorf("unexpected status code determining if module exists: %d", resp.StatusCode)
+}
+
 // getInfo returns information about the version of the package.
 func (c *Client) getInfo(name, version string) (versionInfo, error) {
 	var err error
@@ -147,58 +162,47 @@ func (c *Client) getInfo(name, version string) (versionInfo, error) {
 		resp, err = c.options.HttpClient.Query(c.options.BaseURL + "/" + name + "/@v/" + version + ".info")
 	}
 	if err != nil {
-		return versionInfo{}, newDistributorError(fmt.Errorf("constructing HTTP query for upstream '%s': %s", c.options.BaseURL, err))
+		return versionInfo{}, fmt.Errorf("constructing HTTP query for upstream '%s': %s", c.options.BaseURL, err)
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		var ok bool
+		ok, err = c.moduleExists(name)
+		if err != nil {
+			return versionInfo{}, err
+		}
+		if !ok {
+			return versionInfo{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)}
+		}
+		return versionInfo{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: fmt.Errorf("%w: %s", oslc.ErrVersionNotFound, version)}
+
 	}
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusNotFound {
-			return versionInfo{}, noSuchModuleOrVersionError{
-				Upstream: c.options.BaseURL,
-				Module:   name,
-				Version:  version,
-			}
-		}
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 400)) // actual number pulled out of thin air
-		return versionInfo{}, newDistributorError(fmt.Errorf("non-200 status code getting version '%s' of module '%s' from upstream '%s': %d - Body (base64): %s", version, name, c.options.BaseURL, resp.StatusCode, base64.StdEncoding.EncodeToString(body)))
+		defer resp.Body.Close()
+		return versionInfo{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: fmt.Errorf("non-200 status code getting version '%s' of module '%s' from upstream '%s': %d - Body (base64): %s", version, name, c.options.BaseURL, resp.StatusCode, base64.StdEncoding.EncodeToString(body))}
 	}
 	defer resp.Body.Close()
 	vi := versionInfo{}
 	dec := json.NewDecoder(resp.Body)
 	err = dec.Decode(&vi)
 	if err != nil {
-		return versionInfo{}, newDistributorError(fmt.Errorf("decoding JSON response from upstream '%s': %s", c.options.BaseURL, err))
+		return versionInfo{}, oslc.DistributorError{Distributor: oslc.DistributorGo, Err: fmt.Errorf("decoding JSON response from upstream '%s': %s", c.options.BaseURL, err)}
 	}
 
 	return vi, nil
 }
 
-type noSuchModuleOrVersionError struct {
-	Upstream string
-	Module   string
-	Version  string
-}
-
-func (e noSuchModuleOrVersionError) Error() string {
-	return fmt.Sprintf("unable to find version '%s' of module '%s' in upstream '%s'", e.Version, e.Module, e.Upstream)
-}
-
-func newDistributorError(err error) oslc.DistributorError {
-	return oslc.DistributorError{
-		Distributor: oslc.DistributorGo,
-		Err:         err,
-	}
-}
-
 func unzip(source string, target string) error {
 	r, err := zip.OpenReader(source)
 	if err != nil {
-		return fmt.Errorf("impossible to open zip file: %s", err)
+		return fmt.Errorf("unable to open zip file: %s", err)
 	}
 	defer r.Close()
 
 	for k, f := range r.File {
 		rc, err := f.Open()
 		if err != nil {
-			return fmt.Errorf("impossible to open file n°%d in archive: %w", k, err)
+			return fmt.Errorf("unable to open file %d in archive: %w", k, err)
 		}
 		defer rc.Close()
 		newFilePath := path.Join(target, f.Name)
@@ -206,22 +210,22 @@ func unzip(source string, target string) error {
 		if f.FileInfo().IsDir() {
 			err = os.MkdirAll(newFilePath, 0777)
 			if err != nil {
-				return fmt.Errorf("impossible to MkdirAll: %w", err)
+				return fmt.Errorf("unable to create directories: %w", err)
 			}
 			continue
 		}
 
 		err = os.MkdirAll(path.Dir(newFilePath), 0777)
 		if err != nil {
-			return fmt.Errorf("impossible to MkdirAll: %w", err)
+			return fmt.Errorf("unable to create directories: %w", err)
 		}
 		uncompressedFile, err := os.Create(newFilePath)
 		if err != nil {
-			return fmt.Errorf("impossible to create uncompressed: %w", err)
+			return fmt.Errorf("unable to create uncompressed: %w", err)
 		}
 		_, err = io.Copy(uncompressedFile, rc)
 		if err != nil {
-			return fmt.Errorf("impossible to copy file n°%d: %w", k, err)
+			return fmt.Errorf("unable to copy file %d: %w", k, err)
 		}
 	}
 

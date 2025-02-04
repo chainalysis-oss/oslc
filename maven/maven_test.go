@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/chainalysis-oss/oslc"
 	ownHTTP "github.com/chainalysis-oss/oslc/http"
+	"github.com/chainalysis-oss/oslc/httptestcorpus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -293,6 +294,31 @@ func TestClient_GetLatestVersion_error_json_decode(t *testing.T) {
 	httpClient, err := ownHTTP.NewClient(ownHTTP.WithHTTPClient(mock))
 	require.NoError(t, err)
 	c := setupClient(t, httpClient)
-	_, err = c.GetLatestVersion("testGroupId", "testArtifactId")
+	_, err = c.getLatestVersion("testGroupId", "testArtifactId")
 	assert.Error(t, err)
+}
+
+func TestClient_GetPackageVersion_invalid_package_names(t *testing.T) {
+	cases := []struct {
+		packageName string
+	}{
+		{"testGroupId"},
+		{"testArtifactId"},
+		{""},
+		{"testGroupId:testArtifactId:testArtifactId"},
+		{":"},
+		{":::"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.packageName, func(t *testing.T) {
+			httpClient, err := ownHTTP.NewClient(ownHTTP.WithHTTPClient(httptestcorpus.Embed(&http.Client{}, httptestcorpus.WithTest(t))))
+			require.NoError(t, err)
+			client, err := NewClient(WithHTTPClient(httpClient))
+			require.NoError(t, err)
+			resp, err := client.GetPackageVersion(tc.packageName, "1.0.0")
+			require.Empty(t, resp)
+			require.ErrorIs(t, err, oslc.ErrNoSuchPackage)
+
+		})
+	}
 }

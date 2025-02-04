@@ -126,7 +126,7 @@ func TestGetInfo_for_bad_module(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.module, func(t *testing.T) {
 			resp, err := client.getInfo(tc.module, "")
-			require.ErrorAs(t, err, &noSuchModuleOrVersionError{})
+			require.ErrorIs(t, err, oslc.ErrNoSuchPackage)
 			require.Empty(t, resp)
 		})
 	}
@@ -144,7 +144,7 @@ func TestGetInfo_for_bad_version(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.version, func(t *testing.T) {
 			resp, err := client.getInfo("github.com/chainalysis-oss/oslc", tc.version)
-			require.ErrorAs(t, err, &noSuchModuleOrVersionError{})
+			require.ErrorIs(t, err, oslc.ErrVersionNotFound)
 			require.Empty(t, resp)
 		})
 	}
@@ -170,7 +170,7 @@ func TestGetInfo_upstream_error(t *testing.T) {
 		body          string
 		expectedError error
 	}{
-		{"not found", 404, "not found", &noSuchModuleOrVersionError{}},
+		{"not found", 404, "not found", &oslc.DistributorError{}},
 		{"internal server error", 500, "internal server error", &oslc.DistributorError{}},
 	}
 	for _, tc := range cases {

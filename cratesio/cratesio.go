@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/chainalysis-oss/oslc"
 	ownHTTP "github.com/chainalysis-oss/oslc/http"
+	"io"
 	"net/http"
+	"strings"
 )
 
 var cratesIOBaseURL = "https://crates.io"
@@ -114,7 +116,16 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 
 	resp, err := c.options.HttpClient.Query(fmt.Sprintf("%s/%s", c.options.BaseURL, path))
 	if err != nil {
-		return oslc.Entry{}, err
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: err}
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 400))
+		defer resp.Body.Close()
+		if strings.Contains(string(body), "does not have a version") {
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: fmt.Errorf("%w: %s", oslc.ErrVersionNotFound, name)}
+		}
+		return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: fmt.Errorf("%w: %s", oslc.ErrNoSuchPackage, name)}
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -127,18 +138,18 @@ func (c *Client) GetPackageVersion(name, version string) (oslc.Entry, error) {
 		var crt crateResponse
 		err = json.NewDecoder(resp.Body).Decode(&crt)
 		if err != nil {
-			return oslc.Entry{}, err
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: err}
 		}
 		pkg, err := crt.newestVersion()
 		if err != nil {
-			return oslc.Entry{}, err
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: err}
 		}
 		return pkg.AsEntry(), nil
 	} else {
 		var pkg crateVersionResponse
 		err = json.NewDecoder(resp.Body).Decode(&pkg)
 		if err != nil {
-			return oslc.Entry{}, err
+			return oslc.Entry{}, oslc.DistributorError{Distributor: oslc.DistributorCratesIo, Err: err}
 		}
 		return pkg.AsEntry(), nil
 	}
