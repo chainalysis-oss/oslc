@@ -53,8 +53,24 @@ message DistributionPoint {
 }
 
 /**
+ * A request to get information about several software packages.
+ */
+message GetPackageInfosRequest {
+  // The list of packages for which licensing information is requested.
+  repeated GetPackageInfoRequest packages = 1;
+
+/**
+ * The response to a GetPackageInfosRequest. The order of the packages in the response will match the order of the
+ * packages in the request.
+ */
+message GetPackageInfosResponse {
+  // The list of licensing information for the packages.
+  repeated GetPackageInfoResponse packages = 1;
+
+/**
  * The OSLC service provides licensing information for software packages.
  */
 service OslcService {
   rpc GetPackageInfo(GetPackageInfoRequest) returns (GetPackageInfoResponse) {}
+  rpc GetPackageInfos(GetPackageInfosRequest) returns (GetPackageInfosResponse) {}
 }
